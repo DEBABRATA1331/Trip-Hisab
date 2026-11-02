@@ -223,6 +223,7 @@ class StateManager {
       this.state.kitty.balance -= newExpense.amount;
       this.state.kitty.history.unshift({
         id: 'kh_' + Date.now(),
+        expenseId: newExpense.id,
         type: 'EXPENSE',
         amount: newExpense.amount,
         member: 'Group Kitty',
@@ -344,6 +345,72 @@ class StateManager {
       balanceAfter: num
     });
 
+    this.save();
+  }
+
+  // --- Recalculate Pool Running Ledger & Balance ---
+  recalculateKittyLedger() {
+    if (!this.state.kitty) {
+      this.state.kitty = { balance: 0, history: [] };
+      return;
+    }
+    // Process chronologically from oldest (end of array) to newest (start of array)
+    const history = [...(this.state.kitty.history || [])].reverse();
+    let runningBalance = 0;
+    history.forEach(item => {
+      const amt = Number(item.amount) || 0;
+      if (item.type === 'DEPOSIT') {
+        runningBalance += amt;
+      } else if (item.type === 'WITHDRAW' || item.type === 'EXPENSE') {
+        runningBalance -= amt;
+      } else if (item.type === 'ADJUST') {
+        if (item.balanceAfter !== undefined && !isNaN(item.balanceAfter)) {
+          runningBalance = Number(item.balanceAfter);
+        }
+      }
+      item.balanceAfter = runningBalance;
+    });
+    this.state.kitty.history = history.reverse();
+    this.state.kitty.balance = runningBalance;
+  }
+
+  updateKittyTransaction(id, { type, amount, memberId, note, date }) {
+    const item = (this.state.kitty?.history || []).find(h => h.id === id);
+    if (!item) return;
+
+    this.recordAction(`Edit pool transaction: ${item.note || item.type}`);
+
+    const num = parseFloat(amount) || 0;
+    let memberName = item.member;
+    if (memberId) {
+      const member = this.state.members.find(m => m.id === memberId);
+      memberName = member ? member.name : (memberId === 'ALL' ? `All ${this.state.members.length} Members` : 'Emergency / Cash');
+    }
+
+    if (type) item.type = type;
+    item.amount = num;
+    if (memberId) {
+      item.memberId = memberId;
+      item.member = memberName;
+    }
+    if (note !== undefined) item.note = note;
+    if (date) item.date = date;
+    if (item.type === 'ADJUST') {
+      item.balanceAfter = num;
+    }
+
+    this.recalculateKittyLedger();
+    this.save();
+  }
+
+  deleteKittyTransaction(id) {
+    const item = (this.state.kitty?.history || []).find(h => h.id === id);
+    if (!item) return;
+
+    this.recordAction(`Delete pool transaction: ${item.note || item.type}`);
+    this.state.kitty.history = (this.state.kitty.history || []).filter(h => h.id !== id);
+
+    this.recalculateKittyLedger();
     this.save();
   }
 

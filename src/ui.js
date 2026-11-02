@@ -418,9 +418,17 @@ function renderKittyView(summary, state) {
               </div>
             </div>
           </div>
-          <div class="expense-right">
+          <div class="expense-right" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
             <div class="expense-amount" style="color: ${isAdd ? 'var(--color-green)' : 'var(--text-primary)'};">
               ${sign}${curr}${l.amount?.toLocaleString() || 0}
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 2px;">
+              <button class="btn btn-sm btn-secondary btn-edit-kitty" data-id="${l.id}" title="Edit pool transaction" style="padding: 4px 6px;">
+                ${ICONS.edit}
+              </button>
+              <button class="btn btn-sm btn-danger btn-delete-kitty" data-id="${l.id}" title="Delete pool transaction" style="padding: 4px 6px;">
+                ${ICONS.trash}
+              </button>
             </div>
           </div>
         </div>

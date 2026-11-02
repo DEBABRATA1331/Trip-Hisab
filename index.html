@@ -628,17 +628,33 @@
       <div class="modal-body">
         <form id="form-kitty-action">
           <input type="hidden" id="kitty-action-type" value="DEPOSIT">
+          <input type="hidden" id="kitty-edit-id" value="">
+
+          <div class="form-group" id="group-kitty-type-select" style="display: none;">
+            <label class="form-label">Transaction Type</label>
+            <select id="select-kitty-type" class="form-control">
+              <option value="DEPOSIT">Deposit (+ Money into Kitty)</option>
+              <option value="WITHDRAW">Withdraw (- Cash from Kitty)</option>
+              <option value="ADJUST">Adjust Balance (Direct Override)</option>
+            </select>
+          </div>
 
           <div class="form-group">
             <label class="form-label" id="label-kitty-amount">Amount (<span class="currency-label">₹</span>)</label>
             <input type="number" step="any" id="input-kitty-amount" class="form-control" placeholder="0.00" required autofocus style="font-size: 1.25rem; font-weight: 700;">
+            <div id="hint-kitty-amount" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;"></div>
           </div>
 
           <div class="form-group" id="group-kitty-member">
-            <label class="form-label">Contributed By / Handed To</label>
+            <label class="form-label" id="label-kitty-member">Contributed By / Handed To</label>
             <select id="select-kitty-member" class="form-control">
               <!-- Dynamically populated -->
             </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" id="input-kitty-date" class="form-control">
           </div>
 
           <div class="form-group">

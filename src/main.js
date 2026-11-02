@@ -314,6 +314,42 @@ function setupEventListeners() {
       return;
     }
 
+    // Edit Kitty Transaction Button
+    const editKittyBtn = e.target.closest('.btn-edit-kitty');
+    if (editKittyBtn) {
+      const id = editKittyBtn.dataset.id;
+      const item = (stateManager.state.kitty?.history || []).find(h => h.id === id);
+      if (item) {
+        if (item.type === 'EXPENSE' && item.expenseId) {
+          const exp = stateManager.state.expenses.find(x => x.id === item.expenseId);
+          if (exp) {
+            openExpenseModal(exp);
+            return;
+          }
+        }
+        openKittyActionModal(item.type, item);
+      }
+      return;
+    }
+
+    // Delete Kitty Transaction Button
+    const deleteKittyBtn = e.target.closest('.btn-delete-kitty');
+    if (deleteKittyBtn) {
+      const id = deleteKittyBtn.dataset.id;
+      const item = (stateManager.state.kitty?.history || []).find(h => h.id === id);
+      if (item) {
+        if (confirm(`Delete pool transaction "${item.note || item.type}" (${stateManager.state.currency}${item.amount})? Pool balance and member reports will be updated automatically.`)) {
+          if (item.type === 'EXPENSE' && item.expenseId) {
+            stateManager.deleteExpense(item.expenseId);
+          } else {
+            stateManager.deleteKittyTransaction(id);
+          }
+          showToast(`Deleted "${item.note || item.type}"`, 'Undo', () => stateManager.undo());
+        }
+      }
+      return;
+    }
+
     // Close Modal via background click or close button
     const closeBtn = e.target.closest('[data-close-modal]');
     if (closeBtn) {
@@ -335,25 +371,41 @@ function setupEventListeners() {
   const formKitty = document.getElementById('form-kitty-action');
   formKitty.addEventListener('submit', (e) => {
     e.preventDefault();
-    const type = document.getElementById('kitty-action-type').value;
+    const editId = document.getElementById('kitty-edit-id').value;
+    let type = document.getElementById('kitty-action-type').value;
+    if (editId) {
+      type = document.getElementById('select-kitty-type').value || type;
+    }
     const amount = parseFloat(document.getElementById('input-kitty-amount').value);
     const memberId = document.getElementById('select-kitty-member').value;
     const note = document.getElementById('input-kitty-note').value.trim();
+    const date = document.getElementById('input-kitty-date').value;
 
-    if (isNaN(amount) || (type !== 'MODIFY' && amount <= 0)) {
+    if (isNaN(amount) || (type !== 'MODIFY' && type !== 'ADJUST' && amount <= 0)) {
       alert('Please enter a valid amount');
       return;
     }
 
-    if (type === 'DEPOSIT') {
-      stateManager.addKittyDeposit({ amount, memberId, note });
-      showToast(`Added to pool`, 'Undo', () => stateManager.undo());
-    } else if (type === 'WITHDRAW') {
-      stateManager.withdrawKitty({ amount, memberId, note });
-      showToast(`Withdrawn from pool`, 'Undo', () => stateManager.undo());
-    } else if (type === 'MODIFY') {
-      stateManager.modifyKittyBalance({ newBalance: amount, reason: note });
-      showToast(`Adjusted pool balance`, 'Undo', () => stateManager.undo());
+    if (editId) {
+      stateManager.updateKittyTransaction(editId, {
+        type,
+        amount,
+        memberId: (type === 'ADJUST' ? 'POOL' : memberId),
+        note,
+        date
+      });
+      showToast(`Pool transaction updated`, 'Undo', () => stateManager.undo());
+    } else {
+      if (type === 'DEPOSIT') {
+        stateManager.addKittyDeposit({ amount, memberId, note, date });
+        showToast(`Added to pool`, 'Undo', () => stateManager.undo());
+      } else if (type === 'WITHDRAW') {
+        stateManager.withdrawKitty({ amount, memberId, note, date });
+        showToast(`Withdrawn from pool`, 'Undo', () => stateManager.undo());
+      } else if (type === 'MODIFY') {
+        stateManager.modifyKittyBalance({ newBalance: amount, reason: note, date });
+        showToast(`Adjusted pool balance`, 'Undo', () => stateManager.undo());
+      }
     }
 
     closeModal('modal-kitty-action');
@@ -562,13 +614,21 @@ function setupEventListeners() {
   });
 }
 
-function openKittyActionModal(type) {
+function openKittyActionModal(type, editItem = null) {
   const state = stateManager.state;
   document.getElementById('kitty-action-type').value = type;
+  document.getElementById('kitty-edit-id').value = editItem ? editItem.id : '';
   const title = document.getElementById('modal-kitty-title');
   const amountLabel = document.getElementById('label-kitty-amount');
   const memberGroup = document.getElementById('group-kitty-member');
   const memberSelect = document.getElementById('select-kitty-member');
+  const typeSelectGroup = document.getElementById('group-kitty-type-select');
+  const typeSelect = document.getElementById('select-kitty-type');
+  const submitBtn = document.getElementById('btn-save-kitty-action');
+  const dateInput = document.getElementById('input-kitty-date');
+  const noteInput = document.getElementById('input-kitty-note');
+  const amountInput = document.getElementById('input-kitty-amount');
+  const hintEl = document.getElementById('hint-kitty-amount');
 
   // Populate Member choices
   memberSelect.innerHTML = `<option value="ALL">All ${state.members.length} Friends (Equal contribution each)</option>`;
@@ -578,22 +638,80 @@ function openKittyActionModal(type) {
     opt.textContent = m.name;
     memberSelect.appendChild(opt);
   });
+  const poolOpt = document.createElement('option');
+  poolOpt.value = 'POOL';
+  poolOpt.textContent = 'Emergency / Cash (Common use)';
+  memberSelect.appendChild(poolOpt);
 
-  if (type === 'DEPOSIT') {
-    title.textContent = 'Add Money to Group Pool (Kitty)';
-    amountLabel.innerHTML = `Deposit Amount (<span class="currency-label">${state.currency}</span>)`;
-    memberGroup.style.display = 'block';
-  } else if (type === 'WITHDRAW') {
-    title.textContent = 'Withdraw Cash from Pool (Kitty)';
-    amountLabel.innerHTML = `Withdraw Amount (<span class="currency-label">${state.currency}</span>)`;
-    memberGroup.style.display = 'block';
-  } else if (type === 'MODIFY') {
-    title.textContent = 'Adjust Pool Balance Directly';
-    amountLabel.innerHTML = `Set New Balance (<span class="currency-label">${state.currency}</span>)`;
-    document.getElementById('input-kitty-amount').value = state.kitty.balance;
-    memberGroup.style.display = 'none';
+  const updateHint = () => {
+    const currentType = editItem ? typeSelect.value : type;
+    const selectedMember = memberSelect.value;
+    const amt = parseFloat(amountInput.value) || 0;
+    if (currentType === 'DEPOSIT' && selectedMember === 'ALL' && state.members.length > 0) {
+      if (editItem) {
+        hintEl.textContent = `Total pool deposit: ${state.currency}${amt} (${state.currency}${Math.round(amt / state.members.length)} per member)`;
+      } else {
+        hintEl.textContent = `Entering ${state.currency}${amt || 0} adds ${state.currency}${(amt * state.members.length).toLocaleString()} to pool (${state.currency}${amt || 0} × ${state.members.length} friends)`;
+      }
+    } else {
+      hintEl.textContent = '';
+    }
+  };
+
+  amountInput.oninput = updateHint;
+  memberSelect.onchange = updateHint;
+
+  if (editItem) {
+    title.textContent = 'Edit Pool Transaction';
+    submitBtn.textContent = 'Save Changes';
+    typeSelectGroup.style.display = 'block';
+    typeSelect.value = editItem.type;
+    amountInput.value = editItem.amount;
+    dateInput.value = editItem.date || new Date().toISOString().slice(0, 10);
+    noteInput.value = editItem.note || '';
+    if (editItem.memberId) {
+      memberSelect.value = editItem.memberId;
+    }
+    amountLabel.innerHTML = `Amount (<span class="currency-label">${state.currency}</span>)`;
+    memberGroup.style.display = (editItem.type === 'ADJUST') ? 'none' : 'block';
+
+    typeSelect.onchange = (e) => {
+      const selectedType = e.target.value;
+      if (selectedType === 'ADJUST') {
+        memberGroup.style.display = 'none';
+        amountLabel.innerHTML = `Set New Balance (<span class="currency-label">${state.currency}</span>)`;
+      } else {
+        memberGroup.style.display = 'block';
+        amountLabel.innerHTML = `${selectedType === 'DEPOSIT' ? 'Deposit' : 'Withdraw'} Amount (<span class="currency-label">${state.currency}</span>)`;
+      }
+      updateHint();
+    };
+  } else {
+    submitBtn.textContent = 'Confirm';
+    typeSelectGroup.style.display = 'none';
+    dateInput.value = new Date().toISOString().slice(0, 10);
+    noteInput.value = '';
+    amountInput.value = '';
+
+    if (type === 'DEPOSIT') {
+      title.textContent = 'Add Money to Group Pool (Kitty)';
+      amountLabel.innerHTML = `Deposit Amount (<span class="currency-label">${state.currency}</span>)`;
+      memberGroup.style.display = 'block';
+      memberSelect.value = 'ALL';
+    } else if (type === 'WITHDRAW') {
+      title.textContent = 'Withdraw Cash from Pool (Kitty)';
+      amountLabel.innerHTML = `Withdraw Amount (<span class="currency-label">${state.currency}</span>)`;
+      memberGroup.style.display = 'block';
+      memberSelect.value = 'POOL';
+    } else if (type === 'MODIFY') {
+      title.textContent = 'Adjust Pool Balance Directly';
+      amountLabel.innerHTML = `Set New Balance (<span class="currency-label">${state.currency}</span>)`;
+      amountInput.value = state.kitty.balance;
+      memberGroup.style.display = 'none';
+    }
   }
 
+  updateHint();
   openModal('modal-kitty-action');
 }
 
