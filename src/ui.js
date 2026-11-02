@@ -293,6 +293,11 @@ function renderSplitsAndReports(summary, state) {
           <span>Paid for Group:</span>
           <b>${curr}${m.paidForGroup.toLocaleString()}</b>
         </div>
+        ${m.kittyContributed > 0 ? `
+          <div class="member-metric-row" style="font-size: 0.72rem; color: var(--text-muted);">
+            <span>(Bills: ${curr}${m.paidForGroup - m.kittyContributed} • Kitty: ${curr}${m.kittyContributed})</span>
+          </div>
+        ` : ''}
         <div class="member-metric-row">
           <span>Share of Group:</span>
           <b>${curr}${m.shareOfGroup.toLocaleString()}</b>
@@ -318,7 +323,14 @@ function renderSplitsAndReports(summary, state) {
   // Optimal Settlements List
   const settleList = document.getElementById('splits-settlements-list');
   if (summary.settlementTransfers.length === 0) {
-    settleList.innerHTML = `<div style="text-align: center; color: var(--color-green); padding: 14px; font-weight: 600;">All accounts are settled!</div>`;
+    if (summary.kittyBalance > 0.05) {
+      settleList.innerHTML = `
+        <div style="text-align: center; color: var(--color-green); padding: 14px; font-weight: 600;">
+          All accounts are balanced! Unspent Group Kitty pool balance of ${curr}${summary.kittyBalance.toLocaleString()} is available in the pool.
+        </div>`;
+    } else {
+      settleList.innerHTML = `<div style="text-align: center; color: var(--color-green); padding: 14px; font-weight: 600;">All accounts are settled!</div>`;
+    }
   } else {
     settleList.innerHTML = summary.settlementTransfers.map(t => `
       <div class="settlement-card">
@@ -591,6 +603,14 @@ export function openMemberDetailModal(memberId) {
     <!-- Stats Table -->
     <div class="card" style="padding: 12px; margin-bottom: 16px;">
       <div class="member-metric-row"><span>Total Paid for Group:</span> <b>${curr}${m.paidForGroup.toLocaleString()}</b></div>
+      ${m.kittyContributed > 0 ? `
+        <div class="member-metric-row" style="font-size: 0.76rem; color: var(--text-secondary); padding-left: 10px;">
+          <span>• Direct Bills Paid:</span> <b>${curr}${(m.paidForGroup - m.kittyContributed).toLocaleString()}</b>
+        </div>
+        <div class="member-metric-row" style="font-size: 0.76rem; color: var(--text-secondary); padding-left: 10px;">
+          <span>• Group Kitty Contribution:</span> <b>${curr}${m.kittyContributed.toLocaleString()}</b>
+        </div>
+      ` : ''}
       <div class="member-metric-row"><span>Share of Group Expenses:</span> <b>${curr}${m.shareOfGroup.toLocaleString()}</b></div>
       <div class="member-metric-row"><span>Personal Solo Expenses:</span> <b>${curr}${m.personalSpend.toLocaleString()}</b></div>
     </div>

@@ -100,7 +100,35 @@ export function calculateTripSummary(state) {
     }
   });
 
-  // 2. Process Settlements (Direct transfers already made between friends)
+  // 2. Process Group Kitty (Pool) Contributions & Withdrawals
+  const kittyHistory = state.kitty?.history || [];
+  kittyHistory.forEach(l => {
+    const amt = Number(l.amount) || 0;
+    if (l.type === 'DEPOSIT') {
+      if (l.memberId === 'ALL' && members.length > 0) {
+        // Equal deposit by all members
+        const perPerson = amt / members.length;
+        members.forEach(m => {
+          if (memberMap[m.id]) {
+            memberMap[m.id].paidForGroup += perPerson;
+            memberMap[m.id].kittyContributed = (memberMap[m.id].kittyContributed || 0) + perPerson;
+          }
+        });
+      } else if (l.memberId && memberMap[l.memberId]) {
+        // Specific member deposited
+        memberMap[l.memberId].paidForGroup += amt;
+        memberMap[l.memberId].kittyContributed = (memberMap[l.memberId].kittyContributed || 0) + amt;
+      }
+    } else if (l.type === 'WITHDRAW') {
+      // If cash from pool was taken out by a specific member for solo use
+      if (l.memberId && l.memberId !== 'POOL' && memberMap[l.memberId]) {
+        memberMap[l.memberId].paidForGroup -= amt;
+        memberMap[l.memberId].kittyContributed = (memberMap[l.memberId].kittyContributed || 0) - amt;
+      }
+    }
+  });
+
+  // 3. Process Settlements (Direct transfers already made between friends)
   settlements.forEach(s => {
     const amount = Number(s.amount) || 0;
     // From person paid out cash -> reduces their debt (+ to balance)
@@ -113,14 +141,14 @@ export function calculateTripSummary(state) {
     }
   });
 
-  // 3. Compute Net Balance for each member
+  // 4. Compute Net Balance for each member
   const memberList = Object.values(memberMap).map(m => {
     m.netGroupBalance = Math.round((m.paidForGroup - m.shareOfGroup) * 100) / 100;
     m.totalOutPocket = Math.round((m.paidForGroup + m.personalSpend) * 100) / 100;
     return m;
   });
 
-  // 4. Calculate Optimal Debt Simplification (Minimum Cash Flow)
+  // 5. Calculate Optimal Debt Simplification (Minimum Cash Flow)
   const settlementTransfers = solveMinimumTransfers(memberList);
 
   return {
