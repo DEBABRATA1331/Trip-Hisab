@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trip Hisab - Smart Expense & Split Tracker</title>
+  <meta name="description" content="Group expense splitter and hisab tracker for trips. Real-time Google Sheet sync, individual reports, personal expense isolation, and group kitty management.">
+  <link rel="stylesheet" href="./src/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%230066FF%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z%22/></svg>">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-brand">
+        <div class="brand-logo-icon" title="Trip Hisab">TH</div>
+        <div class="brand-details">
+          <div class="brand-title" id="btn-edit-trip-header" title="Click to rename trip">
+            <span id="header-trip-name">Trip 2026</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div class="brand-subtitle">
+            <span id="header-members-count" style="cursor: pointer;" title="Manage friends">6 Friends</span> • 
+            <span class="sync-status-pill offline" id="header-sync-pill" title="Click to configure Google Sheet">
+              <span class="sync-dot"></span>
+              <span id="sync-status-text">Local Save</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Manage Friends shortcut button -->
+        <button class="btn btn-secondary btn-sm" id="btn-header-manage-members" title="Add or remove friends">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <span>Friends</span>
+        </button>
+
+        <!-- Undo / Redo Buttons for mistakes -->
+        <div class="btn-undo-group" title="Undo / Redo (Ctrl+Z / Ctrl+Y)">
+          <button class="btn-undo" id="btn-undo" disabled title="Undo last action (Ctrl+Z)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+            <span class="btn-undo-label">Undo</span>
+          </button>
+          <button class="btn-undo" id="btn-redo" disabled title="Redo last action (Ctrl+Y)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+          </button>
+        </div>
+
+        <button class="btn btn-primary" id="btn-quick-add-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add Expense</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs-wrapper">
+    <div class="nav-tabs" id="main-nav-tabs">
+      <button class="nav-tab-btn active" data-tab="dashboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Overview
+      </button>
+      <button class="nav-tab-btn" data-tab="expenses">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Expenses <span class="badge-count" id="badge-expenses-count">0</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="splits">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Split & Reports
+      </button>
+      <button class="nav-tab-btn" data-tab="kitty">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+        Group Kitty <span class="badge-count" id="badge-kitty-bal">₹0</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="notes">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Numbers & Notes <span class="badge-count" id="badge-notes-count">0</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings & Sheets
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="tab-view active">
+      <!-- High Level Stat Cards -->
+      <div class="stat-cards-grid">
+        <div class="stat-card highlight">
+          <div class="stat-label">Total Group Spend</div>
+          <div class="stat-val" id="dash-group-spend">₹0</div>
+          <div class="stat-sub" id="dash-per-person">₹0 / person</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Group Kitty (Pool)</div>
+          <div class="stat-val" id="dash-kitty-balance">₹0</div>
+          <div class="stat-sub" id="dash-kitty-status">Available cash</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Personal Spends</div>
+          <div class="stat-val" id="dash-personal-spend">₹0</div>
+          <div class="stat-sub">Tracked separately</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-val" id="dash-total-count">0</div>
+          <div class="stat-sub" id="dash-active-members">6 active friends</div>
+        </div>
+      </div>
+
+      <!-- Quick Action Shortcuts -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
+        <button class="btn btn-primary" id="btn-dash-add-expense">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Add Expense
+        </button>
+        <button class="btn btn-secondary" id="btn-dash-kitty-deposit">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+          Pool Deposit
+        </button>
+        <button class="btn btn-secondary" id="btn-dash-settle">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14"/><path d="m2 13 4 4"/></svg>
+          Record Settlement
+        </button>
+        <button class="btn btn-secondary" id="btn-dash-share-summary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Summary
+        </button>
+      </div>
+
+      <!-- 2-Column Desktop Grid for Overview -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+        
+        <!-- Simplified Settlement Preview -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14"/><path d="m2 13 4 4"/></svg>
+                Who Pays Whom
+              </div>
+              <div class="card-subtitle">Minimal transfers to settle all dues</div>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="btn-open-splits-tab">View Details</button>
+          </div>
+          <div id="dash-settlements-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Category Spend Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                Spending by Category
+              </div>
+              <div class="card-subtitle">Food, travel, stay and activities</div>
+            </div>
+          </div>
+          <div id="dash-category-breakdown">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Expenses Section -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Recent Transactions
+            </div>
+            <div class="card-subtitle">Last entries recorded on trip</div>
+          </div>
+          <button class="btn btn-sm btn-secondary" id="btn-open-all-expenses">View All</button>
+        </div>
+        <div id="dash-recent-expenses-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. EXPENSES VIEW -->
+    <section id="view-expenses" class="tab-view" style="display: none;">
+      <div class="card" style="margin-bottom: 12px; padding: 12px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+          <input type="text" id="expense-search-input" class="form-control" placeholder="Search by name, payer, or category..." style="max-width: 340px;">
+          
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-secondary filter-btn active" data-filter="all">All</button>
+            <button class="btn btn-sm btn-secondary filter-btn" data-filter="group">Group Only</button>
+            <button class="btn btn-sm btn-secondary filter-btn" data-filter="personal">Personal Only</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="card-header" style="padding: 14px 18px; margin: 0; border-bottom: 1px solid var(--border-color); background: var(--bg-surface);">
+          <div class="card-title">Transactions Log</div>
+          <button class="btn btn-sm btn-primary" id="btn-add-expense-tab">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add New
+          </button>
+        </div>
+        <div id="expenses-full-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SPLIT & INDIVIDUAL REPORTS VIEW -->
+    <section id="view-splits" class="tab-view" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">Individual Reports</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary);">Click any friend to view their exact line-items or share report</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-secondary" id="btn-open-manage-members">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            Manage Friends
+          </button>
+          <button class="btn btn-sm btn-secondary" id="btn-share-all-whatsapp">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share Summary
+          </button>
+          <button class="btn btn-sm btn-primary" id="btn-record-settlement-split">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14"/><path d="m2 13 4 4"/></svg>
+            Record Settle
+          </button>
+        </div>
+      </div>
+
+      <!-- Member Cards Grid -->
+      <div class="member-cards-grid" id="splits-members-grid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Settlement Matrix / Who Pays Whom -->
+      <div class="card" style="margin-top: 18px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Optimal Settlement Formula
+            </div>
+            <div class="card-subtitle">Direct payments needed to make everyone ₹0</div>
+          </div>
+        </div>
+        <div id="splits-settlements-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Recorded Settlements History -->
+      <div class="card" style="margin-top: 14px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Settlement History (Payments Made)
+            </div>
+            <div class="card-subtitle">Cleared transfers between friends</div>
+          </div>
+        </div>
+        <div id="splits-history-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. GROUP KITTY / POOL VIEW -->
+    <section id="view-kitty" class="tab-view" style="display: none;">
+      <div class="card highlight" style="border-left: 4px solid var(--brand-blue);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Group Kitty (Common Trip Fund)</div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: #0F172A; margin: 4px 0;" id="kitty-main-balance">₹0</div>
+            <div style="font-size: 0.82rem; color: var(--text-secondary);">
+              Use kitty to pay tolls, parking, shared grocery, or common activities without calculating individual shares each time.
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-primary" id="btn-kitty-add-deposit">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              Add / Deposit Money
+            </button>
+            <button class="btn btn-secondary" id="btn-kitty-withdraw">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Cash Withdraw
+            </button>
+            <button class="btn btn-secondary" id="btn-kitty-modify">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Adjust Balance
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kitty Transaction Log -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Pool Transaction Ledger</div>
+            <div class="card-subtitle">Contributions, withdrawals, and group bill deductions</div>
+          </div>
+        </div>
+        <div id="kitty-history-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. NOTES & DIRECTORY VIEW -->
+    <section id="view-notes" class="tab-view" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">Important Numbers & Trip Notes</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary);">Driver contacts, hotel bookings, flight/train PNR, and quick reminders</p>
+        </div>
+        <button class="btn btn-primary" id="btn-add-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Add Note / Number
+        </button>
+      </div>
+
+      <div id="notes-cards-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- 6. SETTINGS & GOOGLE SHEETS VIEW -->
+    <section id="view-settings" class="tab-view" style="display: none;">
+      
+      <!-- Friends & Members Manager -->
+      <div class="card" id="card-members-settings">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Trip Friends (<span id="settings-members-count-label">6</span>)
+            </div>
+            <div class="card-subtitle">Add or remove names to match your travel group</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="text" id="input-new-member-name" class="form-control" placeholder="Enter friend's name (e.g. Alex, Sam)..." style="max-width: 320px;">
+            <button class="btn btn-primary btn-sm" id="btn-add-member">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              Add Friend
+            </button>
+          </div>
+
+          <div id="settings-members-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Google Sheets Connection Card -->
+      <div class="card highlight" style="border-color: var(--brand-blue-border);">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+              Google Sheets Database Auto-Sync
+            </div>
+            <div class="card-subtitle">Real storage so no hisab can ever be lost</div>
+          </div>
+          <span class="sync-status-pill offline" id="settings-sync-badge">
+            <span class="sync-dot"></span>
+            <span id="settings-sync-text">Not Connected</span>
+          </span>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+          Connect your Google Sheet so all friends can view the live spreadsheet while you use this smooth mobile app to enter expenses.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Google Apps Script Web App URL</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="input-google-sheet-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+            <button class="btn btn-primary" id="btn-save-sheet-url">Save & Connect</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-secondary btn-sm" id="btn-manual-sync-now">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync to Sheet Now
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-view-apps-script-guide">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Apps Script Code & Guide
+          </button>
+        </div>
+      </div>
+
+      <!-- Trip Configuration -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Trip Information</div>
+            <div class="card-subtitle">Change trip title or currency symbol</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Trip Name</label>
+            <input type="text" id="input-trip-name" class="form-control" value="Trip 2026">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Currency Symbol</label>
+            <select id="select-currency" class="form-control">
+              <option value="₹">₹ (INR)</option>
+              <option value="$">$ (USD)</option>
+              <option value="€">€ (EUR)</option>
+              <option value="£">£ (GBP)</option>
+              <option value="AED">AED (Dirhams)</option>
+              <option value="THB">THB (Baht)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup & Export -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Backup & Export</div>
+            <div class="card-subtitle">Instant offline backup files and Excel CSV export</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="btn-export-csv">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            Export to CSV / Excel
+          </button>
+          <button class="btn btn-secondary" id="btn-download-backup">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download JSON Backup
+          </button>
+          <label class="btn btn-secondary" style="cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Restore Backup File
+            <input type="file" id="input-restore-backup" accept=".json" style="display: none;">
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating Add Button for Mobile -->
+  <button class="fab-add" id="fab-add-expense" title="Add Expense">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-item active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Expenses</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="splits">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Split</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="kitty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+      <span>Kitty</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="notes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Notes</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. Add / Edit Expense Modal -->
+  <div class="modal-overlay" id="modal-expense">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-expense-title">Add Expense</div>
+        <button class="modal-close-btn" data-close-modal="modal-expense">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-expense">
+          <input type="hidden" id="input-expense-id" value="">
+
+          <!-- Type Toggle: Group vs Personal Expense -->
+          <div class="type-toggle-group">
+            <button type="button" class="type-toggle-btn active" id="btn-toggle-group-exp" data-type="group">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+              Group Expense (Split)
+            </button>
+            <button type="button" class="type-toggle-btn" id="btn-toggle-personal-exp" data-type="personal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Personal Expense (Solo)
+            </button>
+          </div>
+
+          <!-- Amount & Category -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount (<span class="currency-label">₹</span>)</label>
+              <input type="number" step="any" id="input-exp-amount" class="form-control" placeholder="0.00" required autofocus style="font-size: 1.25rem; font-weight: 700;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="select-exp-category" class="form-control">
+                <option value="Food">Food & Drinks</option>
+                <option value="Travel">Travel & Fuel</option>
+                <option value="Stay">Hotel & Stay</option>
+                <option value="Activities">Activities & Sightseeing</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Misc">Miscellaneous</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description / Title</label>
+            <input type="text" id="input-exp-title" class="form-control" placeholder="e.g. Dinner, Fuel, Toll, Tickets..." required>
+          </div>
+
+          <!-- Who Paid -->
+          <div class="form-group">
+            <label class="form-label" id="label-who-paid">Paid By</label>
+            <select id="select-exp-payer" class="form-control">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <!-- Split Selector (Only shown for Group Expenses) -->
+          <div class="form-group" id="group-split-section">
+            <div class="split-selector-box">
+              <div class="split-header-row">
+                <span><b>Split Between:</b> <span id="split-selected-count">6</span> selected</span>
+                <div>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-split-select-all" style="padding: 2px 6px; font-size: 0.72rem;">All</button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-split-clear-all" style="padding: 2px 6px; font-size: 0.72rem;">Clear</button>
+                </div>
+              </div>
+
+              <div class="split-members-list" id="split-members-checkboxes">
+                <!-- Checkboxes for members -->
+              </div>
+
+              <div style="margin-top: 10px; font-size: 0.8rem; color: var(--brand-blue); font-weight: 600; text-align: right;" id="split-per-person-preview">
+                Per person: ₹0
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" id="input-exp-date" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notes (Optional)</label>
+              <input type="text" id="input-exp-notes" class="form-control" placeholder="Bill number, details...">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-expense">Cancel</button>
+        <button type="submit" form="form-expense" class="btn btn-primary" id="btn-save-expense">Save Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Individual Member Detail Modal -->
+  <div class="modal-overlay" id="modal-member-detail">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-member-title">Member Report</div>
+        <button class="modal-close-btn" data-close-modal="modal-member-detail">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-member-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-member-detail">Close</button>
+        <button type="button" class="btn btn-primary" id="btn-share-member-whatsapp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share WhatsApp Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Kitty Deposit / Withdraw / Modify Modal -->
+  <div class="modal-overlay" id="modal-kitty-action">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-kitty-title">Group Kitty</div>
+        <button class="modal-close-btn" data-close-modal="modal-kitty-action">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-kitty-action">
+          <input type="hidden" id="kitty-action-type" value="DEPOSIT">
+
+          <div class="form-group">
+            <label class="form-label" id="label-kitty-amount">Amount (<span class="currency-label">₹</span>)</label>
+            <input type="number" step="any" id="input-kitty-amount" class="form-control" placeholder="0.00" required autofocus style="font-size: 1.25rem; font-weight: 700;">
+          </div>
+
+          <div class="form-group" id="group-kitty-member">
+            <label class="form-label">Contributed By / Handed To</label>
+            <select id="select-kitty-member" class="form-control">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reason / Note</label>
+            <input type="text" id="input-kitty-note" class="form-control" placeholder="e.g. Initial trip contribution, toll cash...">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-kitty-action">Cancel</button>
+        <button type="submit" form="form-kitty-action" class="btn btn-primary" id="btn-save-kitty-action">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Record Settlement Modal -->
+  <div class="modal-overlay" id="modal-settlement">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Record Settlement (UPI / Cash)</div>
+        <button class="modal-close-btn" data-close-modal="modal-settlement">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-settlement">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Who Paid (Debtor)</label>
+              <select id="select-settle-from" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Who Received (Creditor)</label>
+              <select id="select-settle-to" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Settled Amount (<span class="currency-label">₹</span>)</label>
+            <input type="number" step="any" id="input-settle-amount" class="form-control" placeholder="0.00" required style="font-size: 1.2rem; font-weight: 700;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Note / Reference</label>
+            <input type="text" id="input-settle-note" class="form-control" placeholder="e.g. UPI / Cash handover">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-settlement">Cancel</button>
+        <button type="submit" form="form-settlement" class="btn btn-primary">Save Settlement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Add / Edit Note Modal -->
+  <div class="modal-overlay" id="modal-note">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-note-title">Add Note / Number</div>
+        <button class="modal-close-btn" data-close-modal="modal-note">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-note">
+          <input type="hidden" id="input-note-id" value="">
+          
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select id="select-note-type" class="form-control">
+              <option value="contact">Phone Number / Contact</option>
+              <option value="booking">Hotel / Flight / Booking ID</option>
+              <option value="note">Trip Note / Checklist</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Title / Label</label>
+            <input type="text" id="input-note-title" class="form-control" placeholder="e.g. Driver contact, Hotel Reception..." required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Details / Phone Number / Content</label>
+            <textarea id="input-note-content" class="form-control" rows="3" placeholder="Enter phone number, address, confirmation code..." required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-note">Cancel</button>
+        <button type="submit" form="form-note" class="btn btn-primary">Save Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Google Apps Script Guide & Code Copy Modal -->
+  <div class="modal-overlay" id="modal-apps-script-guide">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title">Google Sheet Connection Guide</div>
+        <button class="modal-close-btn" data-close-modal="modal-apps-script-guide">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px;">
+          Follow these 3 quick steps to link your Google Sheet. It will automatically format tabs for <b>Overview, Group Expenses, Personal Expenses, Kitty Pool, and Settlements</b>!
+        </p>
+        
+        <ol style="font-size: 0.85rem; color: var(--text-primary); margin-left: 20px; margin-bottom: 16px; line-height: 1.6;">
+          <li>Create a blank spreadsheet at <a href="https://sheets.new" target="_blank" style="color: var(--brand-blue); font-weight: 600;">sheets.new</a>.</li>
+          <li>Click <b>Extensions ➔ Apps Script</b> in top menu.</li>
+          <li>Delete any existing lines in <code>Code.gs</code>, paste the code below, and click Save.</li>
+          <li>Click the blue <b>Deploy ➔ New deployment</b> button. Choose <b>Web app</b>. Set Execute as: <b>Me</b>, Who has access: <b>Anyone</b>. Click Deploy and copy the Web App URL!</li>
+        </ol>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label class="form-label" style="margin: 0;">Code.gs Script:</label>
+          <button class="btn btn-sm btn-secondary" id="btn-copy-apps-script">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Script
+          </button>
+        </div>
+        <textarea id="code-apps-script-box" class="form-control" rows="10" readonly style="font-family: monospace; font-size: 0.78rem; background: #F8FAFC;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-apps-script-guide">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- App Logic Scripts -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
