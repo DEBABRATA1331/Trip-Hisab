@@ -25,6 +25,12 @@ const INITIAL_STATE = {
   },
   settlements: [],
   notes: [],
+  security: {
+    enabled: true,
+    groupPin: '1234',
+    adminPin: '9999',
+    memberPins: {}
+  },
   settings: {
     googleSheetUrl: '',
     autoSync: true,
@@ -56,6 +62,12 @@ class StateManager {
           kitty: parsed.kitty || { balance: 0, history: [] },
           settlements: parsed.settlements || [],
           notes: parsed.notes || [],
+          security: {
+            enabled: parsed.security?.enabled ?? true,
+            groupPin: parsed.security?.groupPin || '1234',
+            adminPin: parsed.security?.adminPin || '9999',
+            memberPins: parsed.security?.memberPins || {}
+          },
           settings: { ...INITIAL_STATE.settings, ...(parsed.settings || {}) }
         };
       }
@@ -149,6 +161,30 @@ class StateManager {
   updateGoogleSheetUrl(url) {
     this.recordAction('Update Google Sheet Link');
     this.state.settings.googleSheetUrl = (url || '').trim();
+    this.save();
+  }
+
+  // --- Security & Login Passcodes ---
+  updateSecuritySettings({ groupPin, adminPin, memberPins, enabled }) {
+    this.recordAction('Update Group Passcode');
+    if (!this.state.security) {
+      this.state.security = { enabled: true, groupPin: '1234', adminPin: '9999', memberPins: {} };
+    }
+    if (groupPin !== undefined) this.state.security.groupPin = String(groupPin).trim();
+    if (adminPin !== undefined) this.state.security.adminPin = String(adminPin).trim();
+    if (memberPins !== undefined) this.state.security.memberPins = memberPins;
+    if (enabled !== undefined) this.state.security.enabled = !!enabled;
+    this.save();
+  }
+
+  setMemberPin(memberId, pin) {
+    if (!this.state.security) this.state.security = { enabled: true, groupPin: '1234', adminPin: '9999', memberPins: {} };
+    if (!this.state.security.memberPins) this.state.security.memberPins = {};
+    if (pin) {
+      this.state.security.memberPins[memberId] = String(pin).trim();
+    } else {
+      delete this.state.security.memberPins[memberId];
+    }
     this.save();
   }
 
@@ -482,19 +518,25 @@ class StateManager {
     return JSON.stringify(this.state, null, 2);
   }
 
-  importBackup(jsonString) {
+  importBackup(jsonString, triggerSync = true) {
     try {
       const data = JSON.parse(jsonString);
       if (!data.members || !Array.isArray(data.members)) {
         throw new Error('Invalid backup file: Missing members list');
       }
-      this.recordAction('Restore from Backup file');
+      this.recordAction('Sync Data from Google Sheet');
       this.state = {
         ...INITIAL_STATE,
         ...data,
-        settings: { ...INITIAL_STATE.settings, ...(data.settings || {}) }
+        settings: { ...INITIAL_STATE.settings, ...(data.settings || {}) },
+        security: { ...INITIAL_STATE.security, ...(data.security || {}) }
       };
-      this.save();
+      if (triggerSync) {
+        this.save();
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+        this.notify({ type: 'state_imported' });
+      }
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message };

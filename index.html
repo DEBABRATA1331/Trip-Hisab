@@ -10,6 +10,52 @@
 </head>
 <body>
 
+  <!-- 0. LOGIN CREDENTIAL GATE SCREEN -->
+  <div id="login-gate-screen" class="login-gate-overlay" style="display: none;">
+    <div class="login-gate-card">
+      <div class="login-gate-header">
+        <div class="brand-logo-icon" style="width: 52px; height: 52px; font-size: 1.4rem; margin: 0 auto 12px; background: #0F172A; color: #fff;">TH</div>
+        <h1 class="login-trip-title" id="login-screen-trip-name">Trip 2026</h1>
+        <p class="login-trip-subtitle">Group Expense & Split Monitor</p>
+      </div>
+
+      <form id="form-login-gate" class="login-gate-form">
+        <div class="form-group">
+          <label class="form-label" for="login-select-member">Your Name (Login ID)</label>
+          <select id="login-select-member" class="form-control" required style="font-weight: 600; font-size: 0.95rem; height: 44px;">
+            <!-- Rendered dynamically -->
+          </select>
+        </div>
+
+        <div class="form-group" id="group-new-member-name" style="display: none;">
+          <label class="form-label" for="input-new-member-name">Enter Your Full Name</label>
+          <input type="text" id="input-new-member-name" class="form-control" placeholder="e.g. Rohan Sharma" style="height: 44px;">
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" for="input-login-pin" style="margin-bottom: 0;">Password (Number)</label>
+            <span id="login-hint-badge" style="font-size: 0.72rem; color: var(--text-muted);">Set by Admin</span>
+          </div>
+          <div style="position: relative;">
+            <input type="password" inputmode="numeric" pattern="[0-9]*" id="input-login-pin" class="form-control" placeholder="Enter numeric passcode" required maxlength="12" style="font-size: 1.15rem; font-weight: 700; letter-spacing: 3px; height: 44px; padding-right: 60px;">
+            <button type="button" id="btn-toggle-pin-visibility" class="btn-pin-toggle" title="Show/Hide PIN" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 0.78rem; font-weight: 700;">SHOW</button>
+          </div>
+        </div>
+
+        <div id="login-error-alert" class="login-alert" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width: 100%; height: 46px; font-size: 1rem; font-weight: 700; margin-top: 8px;">
+          Log In & View Expenses
+        </button>
+
+        <div class="login-footer-hint">
+          <span>Shared link connects you to the live trip so all expenses can be monitored together by the group.</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Top App Header -->
   <header class="app-header">
     <div class="header-container">
@@ -31,11 +77,26 @@
       </div>
 
       <div class="header-actions">
+        <!-- Share Group Link shortcut button -->
+        <button class="btn btn-secondary btn-sm" id="btn-header-share-trip" title="Share trip link & passcode with friends">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span>Share</span>
+        </button>
+
         <!-- Manage Friends shortcut button -->
         <button class="btn btn-secondary btn-sm" id="btn-header-manage-members" title="Add or remove friends">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
           <span>Friends</span>
         </button>
+
+        <!-- User Session Badge with Logout -->
+        <div class="user-session-badge" id="header-user-badge" style="display: none;">
+          <span class="avatar avatar-sm" id="header-user-avatar">D</span>
+          <span class="user-session-name" id="header-user-name">Debabrata</span>
+          <button class="btn-logout" id="btn-header-logout" title="Log Out">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </div>
 
         <!-- Undo / Redo Buttons for mistakes -->
         <div class="btn-undo-group" title="Undo / Redo (Ctrl+Z / Ctrl+Y)">
@@ -439,6 +500,45 @@
         </div>
       </div>
 
+      <!-- Security & Member Logins (Admin Settings) -->
+      <div class="card" id="card-security-settings">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Group Logins & Passcode (Admin)</div>
+            <div class="card-subtitle">Set numeric password for members to log in and monitor expenses together</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="btn-settings-share-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share Trip Link
+          </button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Group Member Passcode (Number)</label>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="input-setting-group-pin" class="form-control" placeholder="e.g. 1234" maxlength="10" style="font-weight: 700; font-size: 1.1rem; letter-spacing: 2px;">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Numeric PIN shared with friends so they can select their name and log in.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Admin Master Passcode (Number)</label>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="input-setting-admin-pin" class="form-control" placeholder="e.g. 9999" maxlength="10" style="font-weight: 700; font-size: 1.1rem; letter-spacing: 2px;">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Master numeric PIN for the admin to manage settings and credentials.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+          <button class="btn btn-primary" id="btn-save-security-settings">Save Passcode Settings</button>
+        </div>
+
+        <div style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+          <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Group Members & Login IDs:</div>
+          <div id="settings-members-credentials-list" style="display: flex; flex-direction: column; gap: 6px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
       <!-- Backup & Export -->
       <div class="card">
         <div class="card-header">
@@ -776,6 +876,50 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-close-modal="modal-apps-script-guide">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Share Trip with Group Modal -->
+  <div class="modal-overlay" id="modal-share-trip">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Share Trip with Group</div>
+        <button class="modal-close-btn" data-close-modal="modal-share-trip">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+          Share this link with your trip group. When friends open the link on their mobile or PC, they select their name, enter the passcode, and monitor all trip expenses together!
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Trip Link</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="input-share-link" class="form-control" readonly style="background: var(--bg-surface); font-size: 0.82rem; font-family: monospace;">
+            <button class="btn btn-secondary" id="btn-copy-share-link">Copy</button>
+          </div>
+        </div>
+
+        <div class="card" style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary);">Group Login Credentials:</div>
+          <div style="font-size: 0.82rem; color: var(--text-secondary);">
+            • <b>Login ID:</b> Select your Name from list<br>
+            • <b>Passcode (Number):</b> <span id="share-modal-pin" style="font-weight: 800; color: var(--brand-blue); letter-spacing: 2px;">1234</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-direction: column;">
+          <button class="btn btn-primary" id="btn-share-whatsapp-invite" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Share on WhatsApp
+          </button>
+          <button class="btn btn-secondary" id="btn-copy-full-invite" style="width: 100%; padding: 8px;">
+            Copy Full Message with Instructions
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-share-trip">Close</button>
       </div>
     </div>
   </div>

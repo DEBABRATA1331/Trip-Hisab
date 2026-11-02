@@ -29,6 +29,7 @@ export async function pushToGoogleSheet(state, isManual = false) {
       kitty: state.kitty,
       settlements: state.settlements,
       notes: state.notes,
+      security: state.security,
       summary: {
         totalGroupSpend: summary.totalGroupSpend,
         totalPersonalSpend: summary.totalPersonalSpend,

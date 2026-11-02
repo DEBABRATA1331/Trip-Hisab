@@ -501,6 +501,32 @@ function renderSettingsView(state) {
   document.getElementById('select-currency').value = state.currency || '₹';
   document.getElementById('input-google-sheet-url').value = state.settings?.googleSheetUrl || '';
   
+  // Security Passcodes
+  const groupPinInput = document.getElementById('input-setting-group-pin');
+  if (groupPinInput) groupPinInput.value = state.security?.groupPin || '1234';
+  const adminPinInput = document.getElementById('input-setting-admin-pin');
+  if (adminPinInput) adminPinInput.value = state.security?.adminPin || '9999';
+
+  const credsList = document.getElementById('settings-members-credentials-list');
+  if (credsList) {
+    const groupPin = state.security?.groupPin || '1234';
+    credsList.innerHTML = state.members.map(m => {
+      const pin = state.security?.memberPins?.[m.id] || groupPin;
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: var(--radius-sm);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="avatar" style="background: ${m.color}; width: 28px; height: 28px; font-size: 0.75rem;">${m.avatar}</span>
+            <span style="font-weight: 600; font-size: 0.85rem;">${escapeHtml(m.name)}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">Passcode:</span>
+            <span style="font-weight: 700; font-family: monospace; font-size: 0.9rem; background: var(--bg-surface); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); letter-spacing: 1px;">${pin}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   const countLabel = document.getElementById('settings-members-count-label');
   if (countLabel) countLabel.textContent = state.members.length;
 
@@ -712,8 +738,17 @@ export function openExpenseModal(expenseToEdit = null) {
   if (isEdit) {
     payerSelect.value = expenseToEdit.payerId;
   } else {
-    // Default to first member
-    payerSelect.value = state.members[0]?.id || 'm1';
+    // Default to active logged-in member if available
+    try {
+      const activeUser = JSON.parse(localStorage.getItem('TRIP_HISAB_ACTIVE_USER') || 'null');
+      if (activeUser && activeUser.id && state.members.some(m => m.id === activeUser.id)) {
+        payerSelect.value = activeUser.id;
+      } else {
+        payerSelect.value = state.members[0]?.id || 'm1';
+      }
+    } catch (e) {
+      payerSelect.value = state.members[0]?.id || 'm1';
+    }
   }
 
   // Populate Split Members Checkboxes

@@ -22,7 +22,7 @@ import {
   isPersonalMode
 } from './ui.js';
 import { calculateTripSummary, generateGroupSummaryReportText } from './settlement.js';
-import { pushToGoogleSheet, exportToCSV, downloadBackupJSON } from './sheets-sync.js';
+import { pushToGoogleSheet, pullFromGoogleSheet, exportToCSV, downloadBackupJSON } from './sheets-sync.js';
 
 // Preload Google Apps Script template code for easy copy-paste
 const APPS_SCRIPT_CODE = `/**
@@ -612,6 +612,347 @@ function setupEventListeners() {
     reader.readAsText(file);
     e.target.value = '';
   });
+
+  // 15. Login Gate Credential Events
+  const formLogin = document.getElementById('form-login-gate');
+  if (formLogin) {
+    formLogin.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const memberSelect = document.getElementById('login-select-member');
+      const selectedVal = memberSelect.value;
+      const pinInput = document.getElementById('input-login-pin');
+      const enteredPin = (pinInput.value || '').trim();
+      const errorAlert = document.getElementById('login-error-alert');
+      const security = stateManager.state.security || { groupPin: '1234', adminPin: '9999' };
+
+      errorAlert.style.display = 'none';
+
+      if (!selectedVal) {
+        errorAlert.textContent = 'Please select your name';
+        errorAlert.style.display = 'block';
+        return;
+      }
+
+      if (!enteredPin) {
+        errorAlert.textContent = 'Please enter numeric passcode';
+        errorAlert.style.display = 'block';
+        return;
+      }
+
+      let authenticatedUser = null;
+
+      if (selectedVal === 'ADMIN') {
+        if (enteredPin === security.adminPin || enteredPin === security.groupPin) {
+          authenticatedUser = {
+            id: 'ADMIN',
+            name: 'Admin',
+            avatar: 'A',
+            color: '#0F172A',
+            role: 'admin'
+          };
+        }
+      } else if (selectedVal === 'NEW_MEMBER') {
+        const newName = (document.getElementById('input-new-member-name').value || '').trim();
+        if (!newName) {
+          errorAlert.textContent = 'Please enter your full name';
+          errorAlert.style.display = 'block';
+          return;
+        }
+        if (enteredPin === security.groupPin || enteredPin === security.adminPin) {
+          stateManager.addMember(newName);
+          const created = stateManager.state.members.find(m => m.name.toLowerCase() === newName.toLowerCase());
+          authenticatedUser = {
+            id: created ? created.id : 'm_' + Date.now(),
+            name: newName,
+            avatar: newName.charAt(0).toUpperCase(),
+            color: created ? created.color : '#0066FF',
+            role: 'member'
+          };
+        }
+      } else {
+        const member = stateManager.state.members.find(m => m.id === selectedVal);
+        if (member) {
+          const expectedPin = security.memberPins?.[member.id] || security.groupPin || '1234';
+          if (enteredPin === expectedPin || enteredPin === security.adminPin) {
+            authenticatedUser = {
+              id: member.id,
+              name: member.name,
+              avatar: member.avatar,
+              color: member.color,
+              role: 'member'
+            };
+          }
+        }
+      }
+
+      if (authenticatedUser) {
+        setActiveUser(authenticatedUser);
+        document.getElementById('login-gate-screen').style.display = 'none';
+        pinInput.value = '';
+        showToast(`Welcome, ${authenticatedUser.name}!`);
+        renderApp();
+      } else {
+        errorAlert.textContent = 'Incorrect passcode. Please check with your trip admin.';
+        errorAlert.style.display = 'block';
+        pinInput.focus();
+      }
+    });
+  }
+
+  // Toggle PIN visibility
+  const btnTogglePin = document.getElementById('btn-toggle-pin-visibility');
+  if (btnTogglePin) {
+    btnTogglePin.addEventListener('click', () => {
+      const pinInput = document.getElementById('input-login-pin');
+      if (pinInput.type === 'password') {
+        pinInput.type = 'text';
+        btnTogglePin.textContent = 'HIDE';
+      } else {
+        pinInput.type = 'password';
+        btnTogglePin.textContent = 'SHOW';
+      }
+    });
+  }
+
+  // Toggle new member input on login screen
+  const selectLoginMember = document.getElementById('login-select-member');
+  if (selectLoginMember) {
+    selectLoginMember.addEventListener('change', (e) => {
+      const groupNewMember = document.getElementById('group-new-member-name');
+      if (e.target.value === 'NEW_MEMBER') {
+        groupNewMember.style.display = 'block';
+        document.getElementById('input-new-member-name').focus();
+      } else {
+        groupNewMember.style.display = 'none';
+      }
+    });
+  }
+
+  // Header Logout Button
+  const btnLogout = document.getElementById('btn-header-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      if (confirm('Log out from Trip Hisab?')) {
+        clearActiveUser();
+        checkAuthAndGate();
+      }
+    });
+  }
+
+  // 16. Share Trip Link Events
+  document.getElementById('btn-header-share-trip').addEventListener('click', openShareTripModal);
+  document.getElementById('btn-settings-share-link').addEventListener('click', openShareTripModal);
+
+  document.getElementById('btn-copy-share-link').addEventListener('click', () => {
+    const link = document.getElementById('input-share-link').value;
+    navigator.clipboard.writeText(link).then(() => {
+      showToast('Trip link copied to clipboard!');
+    });
+  });
+
+  document.getElementById('btn-copy-full-invite').addEventListener('click', () => {
+    const state = stateManager.state;
+    const link = document.getElementById('input-share-link').value;
+    const groupPin = state.security?.groupPin || '1234';
+    const msg = `Trip: ${state.tripName}\n\n` +
+      `Monitor all our trip expenses together live:\n` +
+      `Link: ${link}\n` +
+      `Login ID: Select your Name\n` +
+      `Passcode: ${groupPin}\n\n` +
+      `Open on your phone to track our group hisab!`;
+
+    navigator.clipboard.writeText(msg).then(() => {
+      showToast('Invitation copied to clipboard!');
+    });
+  });
+
+  document.getElementById('btn-share-whatsapp-invite').addEventListener('click', () => {
+    const state = stateManager.state;
+    const link = document.getElementById('input-share-link').value;
+    const groupPin = state.security?.groupPin || '1234';
+    const msg = `Trip: ${state.tripName}\n\n` +
+      `Monitor all our trip expenses together live:\n` +
+      `Link: ${link}\n` +
+      `Login ID: Select your Name\n` +
+      `Passcode: ${groupPin}\n\n` +
+      `Open on your phone to track our group hisab!`;
+
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(whatsappUrl, '_blank');
+  });
+
+  // 17. Security Settings Save (Admin)
+  const btnSaveSecurity = document.getElementById('btn-save-security-settings');
+  if (btnSaveSecurity) {
+    btnSaveSecurity.addEventListener('click', () => {
+      const groupPin = (document.getElementById('input-setting-group-pin').value || '').trim();
+      const adminPin = (document.getElementById('input-setting-admin-pin').value || '').trim();
+
+      if (!groupPin) {
+        alert('Please enter a valid numeric group passcode');
+        return;
+      }
+
+      stateManager.updateSecuritySettings({ groupPin, adminPin });
+      showToast('Passcode settings saved!');
+      renderApp();
+    });
+  }
+}
+
+// --- Auth State Management ---
+const AUTH_STORAGE_KEY = 'TRIP_HISAB_ACTIVE_USER';
+
+function getActiveUser() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setActiveUser(user) {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+  updateHeaderUserBadge(user);
+}
+
+function clearActiveUser() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  updateHeaderUserBadge(null);
+}
+
+function updateHeaderUserBadge(user) {
+  const badge = document.getElementById('header-user-badge');
+  const avatarEl = document.getElementById('header-user-avatar');
+  const nameEl = document.getElementById('header-user-name');
+  if (!badge) return;
+
+  if (user) {
+    badge.style.display = 'inline-flex';
+    nameEl.textContent = user.name;
+    avatarEl.textContent = user.avatar || user.name.charAt(0).toUpperCase();
+    if (user.color) avatarEl.style.background = user.color;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function populateLoginMemberChoices() {
+  const select = document.getElementById('login-select-member');
+  if (!select) return;
+  const members = stateManager.state.members || [];
+  let html = `<option value="" disabled selected>-- Select Your Name --</option>`;
+  members.forEach(m => {
+    html += `<option value="${m.id}">${m.name}</option>`;
+  });
+  html += `<option value="ADMIN">Admin (Trip Organizer)</option>`;
+  html += `<option value="NEW_MEMBER">+ Join as New Friend</option>`;
+  select.innerHTML = html;
+
+  // Update trip title on login screen
+  const tripTitleEl = document.getElementById('login-screen-trip-name');
+  if (tripTitleEl) tripTitleEl.textContent = stateManager.state.tripName || 'Trip 2026';
+}
+
+function checkAuthAndGate() {
+  const gate = document.getElementById('login-gate-screen');
+  if (!gate) return true;
+  const activeUser = getActiveUser();
+
+  if (!activeUser) {
+    populateLoginMemberChoices();
+    gate.style.display = 'flex';
+    updateHeaderUserBadge(null);
+    return false;
+  } else {
+    gate.style.display = 'none';
+    updateHeaderUserBadge(activeUser);
+    return true;
+  }
+}
+
+// --- Share Trip Modal ---
+function openShareTripModal() {
+  const state = stateManager.state;
+  const baseUrl = window.location.origin + window.location.pathname;
+  const sheetUrl = state.settings?.googleSheetUrl || '';
+  const groupPin = state.security?.groupPin || '1234';
+
+  // If Google Sheet is connected, append sheet URL to share link
+  const shareUrl = sheetUrl
+    ? `${baseUrl}?sheet=${encodeURIComponent(sheetUrl)}`
+    : baseUrl;
+
+  document.getElementById('input-share-link').value = shareUrl;
+  document.getElementById('share-modal-pin').textContent = groupPin;
+
+  openModal('modal-share-trip');
+}
+
+// --- Shared URL Parameters Handling ---
+async function handleSharedUrlParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sheetParam = urlParams.get('sheet') || urlParams.get('sync');
+  if (sheetParam) {
+    stateManager.updateGoogleSheetUrl(sheetParam);
+    showToast('Connecting to group trip data...');
+    try {
+      const remoteData = await pullFromGoogleSheet(sheetParam);
+      if (remoteData && remoteData.members) {
+        stateManager.importBackup(JSON.stringify(remoteData), false);
+        showToast('Connected! Group hisab loaded.');
+        window.history.replaceState({}, document.title, window.location.pathname);
+        renderApp();
+        checkAuthAndGate();
+      }
+    } catch (err) {
+      console.warn('Error fetching shared trip sheet:', err);
+    }
+  }
+}
+
+// --- Live Background Monitoring Across Group ---
+function startLiveMonitoring() {
+  // Pull latest updates from Google Sheet every 25 seconds
+  setInterval(async () => {
+    const sheetUrl = stateManager.state.settings?.googleSheetUrl;
+    if (!sheetUrl || document.visibilityState !== 'visible') return;
+    try {
+      const remote = await pullFromGoogleSheet(sheetUrl);
+      if (remote && remote.expenses) {
+        const localExpCount = stateManager.state.expenses?.length || 0;
+        const remoteExpCount = remote.expenses?.length || 0;
+        const localKittyBal = stateManager.state.kitty?.balance || 0;
+        const remoteKittyBal = remote.kitty?.balance || 0;
+
+        if (localExpCount !== remoteExpCount || Math.abs(localKittyBal - remoteKittyBal) > 0.01) {
+          stateManager.importBackup(JSON.stringify(remote), false);
+          renderApp();
+          showToast('Updated latest trip expenses from group');
+        }
+      }
+    } catch (e) {
+      // Background check error ignored
+    }
+  }, 25000);
+
+  // Refresh when user returns to browser tab
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && stateManager.state.settings?.googleSheetUrl) {
+      try {
+        const remote = await pullFromGoogleSheet(stateManager.state.settings.googleSheetUrl);
+        if (remote && remote.expenses) {
+          const localExpCount = stateManager.state.expenses?.length || 0;
+          const remoteExpCount = remote.expenses?.length || 0;
+          if (localExpCount !== remoteExpCount) {
+            stateManager.importBackup(JSON.stringify(remote), false);
+            renderApp();
+          }
+        }
+      } catch (e) {}
+    }
+  });
 }
 
 function openKittyActionModal(type, editItem = null) {
@@ -754,20 +1095,29 @@ function openNoteModal(noteToEdit = null) {
 }
 
 // App Initialization
-function init() {
+async function init() {
   cleanLegacyFakeData();
   setupEventListeners();
 
   // Connect Google Sheet debounced auto-sync
   stateManager.onAutoSync = (s) => pushToGoogleSheet(s, false);
 
+  // Check if link was shared with ?sheet=
+  await handleSharedUrlParams();
+
   // Re-render whenever state changes
   stateManager.subscribe(() => {
     renderApp();
+    const user = getActiveUser();
+    if (user) updateHeaderUserBadge(user);
   });
 
   // Initial render
   renderApp();
+  checkAuthAndGate();
+
+  // Start live background monitoring across group
+  startLiveMonitoring();
 }
 
 init();
