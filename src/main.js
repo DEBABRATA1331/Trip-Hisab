@@ -59,8 +59,11 @@ function doPost(e) {
     summary.getRange("A5:D5").setValues([["Member Name", "Paid for Group", "Share of Group", "Net Balance"]]).setBackground("#0F172A").setFontColor("#FFF");
     var mRows = [];
     (payload.members || []).forEach(function(m) {
-      var s = (payload.summary && payload.summary.members && payload.summary.members[m.id]) || {paid:0, share:0, balance:0};
-      mRows.push([m.name, s.paid || 0, s.share || 0, s.balance || 0]);
+      var s = (payload.summary && payload.summary.members && payload.summary.members[m.id]) || {};
+      var paid = s.paid !== undefined ? s.paid : (s.paidForGroup !== undefined ? s.paidForGroup : 0);
+      var share = s.share !== undefined ? s.share : (s.shareOfGroup !== undefined ? s.shareOfGroup : 0);
+      var balance = s.balance !== undefined ? s.balance : (s.netGroupBalance !== undefined ? s.netGroupBalance : 0);
+      mRows.push([m.name, paid, share, balance]);
     });
     if (mRows.length) summary.getRange(6, 1, mRows.length, 4).setValues(mRows);
     
@@ -84,27 +87,7 @@ function doPost(e) {
 
 // Clean legacy seeded data if present from earlier tests
 function cleanLegacyFakeData() {
-  try {
-    localStorage.removeItem('TRIP_HISAB_DATA_V1');
-    const current = localStorage.getItem('TRIP_HISAB_DATA_V2');
-    if (current) {
-      const parsed = JSON.parse(current);
-      // If expenses have fake seed ids, clear them
-      if (parsed.expenses && parsed.expenses.some(e => e.id && e.id.startsWith('exp_init_'))) {
-        parsed.expenses = [];
-        parsed.kitty = { balance: 0, history: [] };
-        parsed.notes = [];
-        parsed.settlements = [];
-        localStorage.setItem('TRIP_HISAB_DATA_V2', JSON.stringify(parsed));
-        stateManager.state.expenses = [];
-        stateManager.state.kitty = { balance: 0, history: [] };
-        stateManager.state.notes = [];
-        stateManager.state.settlements = [];
-      }
-    }
-  } catch (err) {
-    console.warn('Clean legacy data error', err);
-  }
+  // Safe no-op to guarantee existing user data, members, expenses, and sessions are never wiped
 }
 
 // Setup Event Listeners
@@ -878,6 +861,11 @@ function openShareTripModal() {
   const baseUrl = window.location.origin + window.location.pathname;
   const sheetUrl = state.settings?.googleSheetUrl || '';
   const groupPin = state.security?.groupPin || '1234';
+
+  // Make sure Google Sheet has the freshest members and calculated totals right now
+  if (sheetUrl) {
+    pushToGoogleSheet(state, false).catch(e => console.warn('Sync on share modal:', e));
+  }
 
   // If Google Sheet is connected, append sheet URL to share link
   const shareUrl = sheetUrl

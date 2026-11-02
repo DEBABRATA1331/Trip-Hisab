@@ -567,12 +567,15 @@ export function updateSyncStatusUI(status, lastSyncedAt) {
   if (status === 'syncing') {
     label = 'Syncing...';
     badgeClass = 'syncing';
-  } else if (status === 'synced') {
+  } else if (status === 'synced' || (lastSyncedAt && status !== 'error')) {
     label = 'Synced to Sheet';
     badgeClass = 'synced';
   } else if (status === 'error') {
     label = 'Sync Error';
     badgeClass = 'error';
+  } else if (stateManager.state.settings?.googleSheetUrl) {
+    label = 'Connected';
+    badgeClass = 'synced';
   }
 
   headerPill.classList.add(badgeClass);

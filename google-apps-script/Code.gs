@@ -136,12 +136,15 @@ function renderOverviewSheet(ss, data) {
   if (data.members && data.members.length > 0) {
     var memberStats = (data.summary && data.summary.members) || {};
     data.members.forEach(function(m) {
-      var stats = memberStats[m.id] || { paid: 0, share: 0, balance: 0 };
+      var stats = memberStats[m.id] || {};
+      var paid = stats.paid !== undefined ? stats.paid : (stats.paidForGroup !== undefined ? stats.paidForGroup : 0);
+      var share = stats.share !== undefined ? stats.share : (stats.shareOfGroup !== undefined ? stats.shareOfGroup : 0);
+      var balance = stats.balance !== undefined ? stats.balance : (stats.netGroupBalance !== undefined ? stats.netGroupBalance : 0);
       rows.push([
         m.name,
-        stats.paid || 0,
-        stats.share || 0,
-        stats.balance || 0
+        paid,
+        share,
+        balance
       ]);
     });
   }

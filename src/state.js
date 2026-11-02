@@ -525,11 +525,27 @@ class StateManager {
         throw new Error('Invalid backup file: Missing members list');
       }
       this.recordAction('Sync Data from Google Sheet');
+      // Preserve existing settings (like googleSheetUrl) so sessions and sheet connections are never lost
+      const currentUrl = this.state.settings?.googleSheetUrl || '';
+      const remoteUrl = data.settings?.googleSheetUrl || '';
+      const finalUrl = remoteUrl || currentUrl;
+
       this.state = {
         ...INITIAL_STATE,
         ...data,
-        settings: { ...INITIAL_STATE.settings, ...(data.settings || {}) },
-        security: { ...INITIAL_STATE.security, ...(data.security || {}) }
+        settings: {
+          ...INITIAL_STATE.settings,
+          ...(this.state.settings || {}),
+          ...(data.settings || {}),
+          googleSheetUrl: finalUrl,
+          syncStatus: finalUrl ? 'synced' : 'offline',
+          lastSyncedAt: new Date().toISOString()
+        },
+        security: {
+          ...INITIAL_STATE.security,
+          ...(this.state.security || {}),
+          ...(data.security || {})
+        }
       };
       if (triggerSync) {
         this.save();

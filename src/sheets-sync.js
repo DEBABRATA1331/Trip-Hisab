@@ -21,6 +21,19 @@ export async function pushToGoogleSheet(state, isManual = false) {
 
   try {
     const summary = calculateTripSummary(state);
+    const membersSummaryMap = {};
+    (summary.members || []).forEach(m => {
+      membersSummaryMap[m.id] = {
+        paid: m.paidForGroup || 0,
+        paidForGroup: m.paidForGroup || 0,
+        share: m.shareOfGroup || 0,
+        shareOfGroup: m.shareOfGroup || 0,
+        balance: m.netGroupBalance || 0,
+        netGroupBalance: m.netGroupBalance || 0,
+        personalSpend: m.personalSpend || 0
+      };
+    });
+
     const payload = {
       tripName: state.tripName,
       currency: state.currency,
@@ -30,11 +43,15 @@ export async function pushToGoogleSheet(state, isManual = false) {
       settlements: state.settlements,
       notes: state.notes,
       security: state.security,
+      settings: {
+        googleSheetUrl: state.settings?.googleSheetUrl || '',
+        autoSync: true
+      },
       summary: {
         totalGroupSpend: summary.totalGroupSpend,
         totalPersonalSpend: summary.totalPersonalSpend,
         kittyBalance: summary.kittyBalance,
-        members: summary.memberMap
+        members: membersSummaryMap
       },
       exportedAt: new Date().toISOString()
     };
