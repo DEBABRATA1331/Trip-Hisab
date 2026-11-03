@@ -127,32 +127,44 @@ export function onAuthChange(callback) {
 /** Create a new trip */
 export async function createTrip({ name, currency = '₹', budget = 0 }) {
   const user = await getUser();
-  if (!user) throw new Error('Not authenticated');
+  if (!user) throw new Error('You must be logged in to create a trip.');
 
-  // Generate a random invite code
-  const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  // Generate a random 6-character alphanumeric uppercase invite code
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let inviteCode = '';
+  for (let i = 0; i < 6; i++) {
+    inviteCode += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
 
   const { data, error } = await supabase
     .from('trips')
     .insert({
-      name,
-      currency,
-      budget,
+      name: (name || 'My Trip').trim(),
+      currency: currency || '₹',
+      budget: parseFloat(budget) || 0,
       invite_code: inviteCode,
       created_by: user.id
     })
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error creating trip:', error);
+    throw error;
+  }
 
   // Auto-join as admin member
-  await supabase.from('trip_members').insert({
+  const memberName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Admin';
+  const { error: memberErr } = await supabase.from('trip_members').insert({
     trip_id: data.id,
     user_id: user.id,
-    display_name: user.user_metadata?.display_name || user.email,
+    display_name: memberName,
     role: 'admin'
   });
+
+  if (memberErr) {
+    console.warn('Creator already added or member insert warning:', memberErr);
+  }
 
   return data;
 }

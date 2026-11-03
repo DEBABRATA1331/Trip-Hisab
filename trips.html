@@ -298,17 +298,22 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.65) !important;
       backdrop-filter: blur(8px);
-      display: none;
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 9999 !important;
       padding: 16px;
+      transition: opacity 0.2s ease;
     }
-    .modal-overlay.open {
-      display: flex;
-      animation: fadeIn 0.2s ease;
+    .modal-overlay.open,
+    .modal-overlay.active {
+      display: flex !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
     }
     .modal-box {
       background: #fff;
@@ -317,6 +322,8 @@
       width: 100%;
       max-width: 420px;
       box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 10000;
       animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .modal-header-row {
@@ -736,15 +743,50 @@
       window.location.href = './login.html';
     });
 
-    // OPEN / CLOSE MODALS
-    function openModal(id) { document.getElementById(id).classList.add('open'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    // OPEN / CLOSE MODALS (using both .open and .active for full CSS compatibility)
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.add('open');
+      modal.classList.add('active');
+    }
 
-    document.getElementById('btn-new-trip').addEventListener('click', () => openModal('modal-new-trip'));
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+    }
+
+    // Close when clicking directly on overlay background
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          closeModal(overlay.id);
+        }
+      });
+    });
+
+    // Prevent clicks inside the modal card from closing it
+    document.querySelectorAll('.modal-box').forEach(box => {
+      box.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    });
+
+    document.getElementById('btn-new-trip').addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal('modal-new-trip');
+      setTimeout(() => document.getElementById('new-trip-name')?.focus(), 50);
+    });
     document.getElementById('btn-cancel-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
     document.getElementById('btn-close-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
 
-    document.getElementById('btn-join-trip').addEventListener('click', () => openModal('modal-join-trip'));
+    document.getElementById('btn-join-trip').addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal('modal-join-trip');
+      setTimeout(() => document.getElementById('join-invite-code')?.focus(), 50);
+    });
     document.getElementById('btn-cancel-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
     document.getElementById('btn-close-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
 
