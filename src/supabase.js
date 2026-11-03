@@ -12,10 +12,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── AUTH HELPERS ──────────────────────────────────────────────────────────────
 
-/** Send a 6-digit OTP code to the user's email */
+/** Send a 6-digit or 8-digit OTP code to the user's email */
 export async function sendOtp(email) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
   const { data, error } = await supabase.auth.signInWithOtp({
-    email,
+    email: cleanEmail,
     options: {
       shouldCreateUser: true
     }
@@ -24,15 +25,56 @@ export async function sendOtp(email) {
   return data;
 }
 
-/** Verify 6-digit OTP code */
+/** Verify OTP code with automatic fallback for email, magiclink, or signup token types */
 export async function verifyOtp(email, token) {
-  const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: 'email'
-  });
-  if (error) throw error;
-  return data;
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanToken = String(token || '').trim().replace(/\s+/g, '');
+
+  if (!cleanEmail) {
+    throw new Error('Email address is missing. Please enter your email again.');
+  }
+
+  // 1. Try 'email' type (standard email OTP)
+  let lastError = null;
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
+      type: 'email'
+    });
+    if (!error && data?.session) return data;
+    if (error) lastError = error;
+  } catch (err) {
+    lastError = err;
+  }
+
+  // 2. Try 'magiclink' type
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
+      type: 'magiclink'
+    });
+    if (!error && data?.session) return data;
+    if (error) lastError = error;
+  } catch (err) {
+    lastError = err;
+  }
+
+  // 3. Try 'signup' type (if new user confirmation)
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
+      type: 'signup'
+    });
+    if (!error && data?.session) return data;
+    if (error) lastError = error;
+  } catch (err) {
+    lastError = err;
+  }
+
+  throw lastError || new Error('Invalid or expired code. Please request a new code.');
 }
 
 /** Sign up a new user with email + password */

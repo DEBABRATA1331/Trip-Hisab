@@ -162,7 +162,11 @@
     const user = await getUser();
     if (user) { window.location.href = './trips.html'; }
 
-    let currentOtpEmail = '';
+    // Restore saved OTP email from session if mobile browser refreshed
+    let currentOtpEmail = sessionStorage.getItem('upmark_otp_email') || '';
+    if (currentOtpEmail && document.getElementById('otp-email')) {
+      document.getElementById('otp-email').value = currentOtpEmail;
+    }
 
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -200,14 +204,16 @@
     document.getElementById('form-send-otp').addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlert();
-      const email = document.getElementById('otp-email').value.trim();
+      const email = document.getElementById('otp-email').value.trim().toLowerCase();
       currentOtpEmail = email;
+      sessionStorage.setItem('upmark_otp_email', email);
       setLoading('btn-send-otp', true, 'Send Login Code');
       try {
         await sendOtp(email);
         showAlert(`A login code was sent to ${email}. Please check your inbox (or spam)!`, 'info');
         document.getElementById('form-send-otp').style.display = 'none';
         document.getElementById('form-verify-otp').style.display = 'block';
+        document.getElementById('otp-code').value = '';
         document.getElementById('otp-code').focus();
       } catch (err) {
         showAlert(err.message || 'Failed to send login code. Please check your Brevo SMTP settings.');
@@ -220,17 +226,25 @@
     document.getElementById('form-verify-otp').addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlert();
-      const code = document.getElementById('otp-code').value.trim();
+      const email = currentOtpEmail || sessionStorage.getItem('upmark_otp_email') || document.getElementById('otp-email').value.trim().toLowerCase();
+      const code = document.getElementById('otp-code').value.trim().replace(/\s+/g, '');
+      
+      if (!email) {
+        showAlert('Email is missing. Please click "Change email" and enter it again.');
+        return;
+      }
       if (!code || code.length < 4) {
         showAlert('Please enter the code sent to your email.');
         return;
       }
-      setLoading('btn-verify-otp', true, 'Verify Code & Enter');
+      setLoading('btn-verify-otp', true, 'Verifying...');
       try {
-        await verifyOtp(currentOtpEmail, code);
+        await verifyOtp(email, code);
+        sessionStorage.removeItem('upmark_otp_email');
         showAlert('Code verified! Logging you in...', 'success');
         window.location.href = './trips.html';
       } catch (err) {
+        console.error('Verify error:', err);
         showAlert(err.message || 'Invalid or expired code. Please try again or request a new code.');
       } finally {
         setLoading('btn-verify-otp', false, 'Verify Code & Enter');
@@ -240,10 +254,15 @@
     // Resend OTP
     document.getElementById('btn-resend-otp').addEventListener('click', async () => {
       hideAlert();
+      const email = currentOtpEmail || sessionStorage.getItem('upmark_otp_email') || document.getElementById('otp-email').value.trim().toLowerCase();
+      if (!email) {
+        showAlert('Please enter your email address first.');
+        return;
+      }
       setLoading('btn-resend-otp', true, 'Resending...');
       try {
-        await sendOtp(currentOtpEmail);
-        showAlert('A fresh 6-digit code has been sent to your email!', 'success');
+        await sendOtp(email);
+        showAlert('A fresh code has been sent to your email!', 'success');
       } catch (err) {
         showAlert(err.message || 'Failed to resend code.');
       } finally {
