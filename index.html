@@ -3,10 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trip Hisab - Smart Expense & Split Tracker</title>
-  <meta name="description" content="Group expense splitter and hisab tracker for trips. Real-time Google Sheet sync, individual reports, personal expense isolation, and group kitty management.">
+  <title>Upmark Curve (The Trip Hisab) - Smart Travel Budget & Group Expense Tracker</title>
+  
+  <!-- Primary Meta Tags & Travel SEO -->
+  <meta name="title" content="Upmark Curve (The Trip Hisab) - Smart Travel Budget & Group Expense Tracker">
+  <meta name="description" content="Upmark Curve (The Trip Hisab) is a minimal, fast, and free travel budget tracker and group expense splitter. Track vacation costs, calculate who owes whom, manage group kitty funds, and auto-settle hisab in real-time.">
+  <meta name="keywords" content="upmarkcurve, upmark curve, the trip hisab, trip hisab, travel expense tracker, split travel bills, group expense splitter, vacation budget calculator, travel settlement app, trip cost calculator">
+  <meta name="author" content="Upmark Curve">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://upmarkcurve.in/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://upmarkcurve.in/">
+  <meta property="og:title" content="Upmark Curve (The Trip Hisab) - Travel Budget & Split Tracker">
+  <meta property="og:description" content="Minimal, real-time group travel budget calculator and expense splitter. Track common pools, settlements, and hisab seamlessly.">
+  <meta property="og:image" content="https://upmarkcurve.in/logo.svg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://upmarkcurve.in/">
+  <meta property="twitter:title" content="Upmark Curve (The Trip Hisab)">
+  <meta property="twitter:description" content="Smart group expense splitter and vacation hisab tracker. Clean, fast, and 100% free with persistent cloud database.">
+  <meta property="twitter:image" content="https://upmarkcurve.in/logo.svg">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%230066FF%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z%22/></svg>">
+
+  <!-- Structured Schema for Google Travel/WebApps Ranking -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Upmark Curve (The Trip Hisab)",
+    "alternateName": "The Trip Hisab",
+    "url": "https://upmarkcurve.in/",
+    "applicationCategory": "TravelApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "description": "Minimal, real-time travel budget tracker and group hisab splitter for vacations, road trips, and tours."
+  }
+  </script>
 </head>
 <body>
 
@@ -14,9 +56,9 @@
   <div id="login-gate-screen" class="login-gate-overlay" style="display: none;">
     <div class="login-gate-card">
       <div class="login-gate-header">
-        <div class="brand-logo-icon" style="width: 52px; height: 52px; font-size: 1.4rem; margin: 0 auto 12px; background: #0F172A; color: #fff;">TH</div>
+        <img src="./logo.svg" alt="Upmark Curve Logo" style="width: 58px; height: 58px; margin: 0 auto 12px; display: block; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,102,255,0.25);">
         <h1 class="login-trip-title" id="login-screen-trip-name">Trip 2026</h1>
-        <p class="login-trip-subtitle">Group Expense & Split Monitor</p>
+        <p class="login-trip-subtitle">Upmark Curve · Group Expense & Split Monitor</p>
       </div>
 
       <form id="form-login-gate" class="login-gate-form">
@@ -60,25 +102,34 @@
   <header class="app-header">
     <div class="header-container">
       <div class="header-brand">
-        <div class="brand-logo-icon" title="Trip Hisab">TH</div>
+        <a href="./trips.html" title="Upmark Curve - My Trips" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+          <img src="./logo.svg" alt="Upmark Curve Logo" style="width: 38px; height: 38px; border-radius: 10px; display: block; box-shadow: 0 2px 8px rgba(0,102,255,0.2);">
+        </a>
         <div class="brand-details">
           <div class="brand-title" id="btn-edit-trip-header" title="Click to rename trip">
             <span id="header-trip-name">Trip 2026</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </div>
           <div class="brand-subtitle">
+            <span style="font-weight: 700; color: #0066FF;">Upmark Curve</span> • 
             <span id="header-members-count" style="cursor: pointer;" title="Manage friends">6 Friends</span> • 
-            <span class="sync-status-pill offline" id="header-sync-pill" title="Click to configure Google Sheet">
+            <span class="sync-status-pill offline" id="header-sync-pill" title="Live Database Status">
               <span class="sync-dot"></span>
-              <span id="sync-status-text">Local Save</span>
+              <span id="sync-status-text">Cloud Sync</span>
             </span>
           </div>
         </div>
       </div>
 
       <div class="header-actions">
+        <!-- Switch Trips Button -->
+        <a href="./trips.html" class="btn btn-secondary btn-sm" title="Switch to another trip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Trips</span>
+        </a>
+
         <!-- Share Group Link shortcut button -->
-        <button class="btn btn-secondary btn-sm" id="btn-header-share-trip" title="Share trip link & passcode with friends">
+        <button class="btn btn-secondary btn-sm" id="btn-header-share-trip" title="Share trip link with friends">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <span>Share</span>
         </button>

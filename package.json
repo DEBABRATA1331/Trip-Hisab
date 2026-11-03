@@ -1,5 +1,6 @@
 {
-  "name": "trip-hisab",
+  "name": "upmarkcurve-trip-hisab",
+  "description": "Upmark Curve (The Trip Hisab) - Minimal Group Travel Expense & Budget Tracker",
   "private": true,
   "version": "1.0.0",
   "type": "module",

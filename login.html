@@ -3,17 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trip Hisab - Login</title>
+  <title>Login & Signup | Upmark Curve (The Trip Hisab)</title>
+  
+  <meta name="title" content="Login | Upmark Curve (The Trip Hisab)">
+  <meta name="description" content="Sign in or create a free account on Upmark Curve (The Trip Hisab) to organize group travel expenses, track vacation budgets, and split hisab automatically.">
+  <meta name="keywords" content="upmarkcurve login, the trip hisab login, travel expense account, trip budget tracker">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://upmarkcurve.in/login.html">
+
+  <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%230066FF%22 stroke-width=%222%22><path d=%22M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z%22/></svg>">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { min-height: 100vh; background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
     .auth-card { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 420px; box-shadow: 0 25px 60px rgba(0,0,0,0.35); }
     .auth-logo { text-align: center; margin-bottom: 24px; }
-    .auth-logo-icon { width: 60px; height: 60px; background: #0066FF; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; }
-    .auth-logo h1 { font-size: 1.5rem; font-weight: 800; color: #0F172A; }
-    .auth-logo p { font-size: 0.85rem; color: #64748B; margin-top: 4px; }
+    .auth-logo-img { width: 68px; height: 68px; border-radius: 18px; margin: 0 auto 12px; display: block; box-shadow: 0 6px 18px rgba(0,102,255,0.28); }
+    .auth-logo h1 { font-size: 1.45rem; font-weight: 800; color: #0F172A; letter-spacing: -0.3px; }
+    .auth-logo .subtitle { font-size: 0.82rem; font-weight: 700; color: #0066FF; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+    .auth-logo p { font-size: 0.82rem; color: #64748B; margin-top: 6px; }
     .tabs { display: flex; background: #F1F5F9; border-radius: 10px; padding: 4px; margin-bottom: 24px; }
     .tab-btn { flex: 1; padding: 9px; border: none; background: transparent; border-radius: 8px; font-size: 0.88rem; font-weight: 600; color: #64748B; cursor: pointer; transition: all 0.2s; }
     .tab-btn.active { background: #fff; color: #0066FF; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
@@ -38,7 +46,7 @@
     .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #E2E8F0; }
     .divider span { background: #fff; padding: 0 10px; position: relative; }
     .forgot-link { font-size: 0.8rem; color: #0066FF; cursor: pointer; text-align: right; display: block; margin-top: -8px; margin-bottom: 14px; }
-    .domain-badge { text-align: center; margin-top: 20px; font-size: 0.75rem; color: #94A3B8; }
+    .domain-badge { text-align: center; margin-top: 20px; font-size: 0.76rem; color: #94A3B8; }
     .domain-badge strong { color: #0066FF; }
     .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -47,9 +55,10 @@
 <body>
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="auth-logo-icon">TH</div>
-      <h1>Trip Hisab</h1>
-      <p>Smart Group Expense Tracker</p>
+      <img src="./logo.svg" alt="Upmark Curve Logo" class="auth-logo-img">
+      <h1>Upmark Curve</h1>
+      <div class="subtitle">The Trip Hisab</div>
+      <p>Minimal Group Budget & Expense Tracker</p>
     </div>
 
     <!-- Alert box -->
@@ -99,7 +108,7 @@
       </form>
     </div>
 
-    <div class="domain-badge">Powered by <strong>upmarkcurve.in</strong> · Free forever</div>
+    <div class="domain-badge">Official <strong>upmarkcurve.in</strong> · 100% Free Forever</div>
   </div>
 
   <script type="module">

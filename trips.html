@@ -3,15 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trip Hisab - My Trips</title>
+  <title>My Trips | Upmark Curve (The Trip Hisab)</title>
+  
+  <meta name="title" content="My Trips | Upmark Curve (The Trip Hisab)">
+  <meta name="description" content="Manage all your group trips, vacation budgets, and hisab trackers in one place on Upmark Curve (The Trip Hisab). Create new trips or join friends with an invite code.">
+  <meta name="keywords" content="upmarkcurve trips, group travel dashboard, the trip hisab my trips, vacation expenses">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://upmarkcurve.in/trips.html">
+
+  <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%230066FF%22 stroke-width=%222%22><path d=%22M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z%22/></svg>">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { min-height: 100vh; background: #F0F4F8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .top-bar { background: #0F172A; color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .top-bar-brand { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; }
-    .top-bar-brand span { color: #60A5FA; }
+    .top-bar { background: #0F172A; color: #fff; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1E293B; }
+    .top-bar-brand { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 800; letter-spacing: -0.3px; text-decoration: none; color: #fff; }
+    .top-bar-brand img { width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,102,255,0.3); }
+    .top-bar-brand span { color: #38BDF8; font-weight: 600; font-size: 0.88rem; }
     .user-info { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: #0066FF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
     .btn-logout-top { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; }
@@ -70,7 +78,16 @@
 
   <!-- TOP BAR -->
   <div class="top-bar">
-    <div class="top-bar-brand">Trip <span>Hisab</span></div>
+    <a href="./trips.html" class="top-bar-brand">
+      <img src="./logo.svg" alt="Upmark Curve">
+      <div>Upmark Curve <span>· The Trip Hisab</span></div>
+    </a>
+    <div class="user-info">
+      <div class="avatar" id="user-avatar">?</div>
+      <span id="user-name-display">Loading...</span>
+      <button class="btn-logout-top" id="btn-logout">Log Out</button>
+    </div>
+  </div>
     <div class="user-info">
       <div class="avatar" id="user-avatar">?</div>
       <span id="user-name-display">Loading...</span>
