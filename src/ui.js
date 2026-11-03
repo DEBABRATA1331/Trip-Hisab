@@ -84,6 +84,8 @@ export function renderApp() {
   renderSplitsAndReports(summary, state);
   renderKittyView(summary, state);
   renderNotesView(state);
+  renderChatView(state);
+  renderRouteView(state);
   renderSettingsView(state);
 }
 
@@ -98,6 +100,14 @@ function renderDashboard(summary, state) {
   document.getElementById('dash-personal-spend').textContent = `${curr}${summary.totalPersonalSpend.toLocaleString()}`;
   document.getElementById('dash-total-count').textContent = state.expenses.length;
   document.getElementById('dash-active-members').textContent = `${state.members.length} active friends`;
+
+  // Update Dedicated Share Banner
+  const inviteCodeEl = document.getElementById('dash-invite-code');
+  if (inviteCodeEl) inviteCodeEl.textContent = state.inviteCode || '------';
+  const shareInput = document.getElementById('dash-share-url-input');
+  if (shareInput) {
+    shareInput.value = `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
+  }
 
   // Settlement Preview
   const settleContainer = document.getElementById('dash-settlements-list');
@@ -494,56 +504,263 @@ function renderNotesView(state) {
 }
 
 /**
- * 6. Render Settings View & Member Manager
+ * 6. Render Trip Chat View
+ */
+export function renderChatView(state) {
+  const container = document.getElementById('chat-messages-box');
+  if (!container) return;
+  const messages = state.messages || [];
+  const currentUserId = stateManager.currentUser?.id;
+  const currentMemberName = stateManager.currentMember?.name;
+
+  if (messages.length === 0) {
+    container.innerHTML = `
+      <div class="chat-empty-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p>No messages yet. Say hi to your trip friends!</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = messages.map(m => {
+    const isSelf = (m.user_id && m.user_id === currentUserId) || (m.sender_name === currentMemberName);
+    const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const avatarChar = (m.sender_name || 'T').charAt(0).toUpperCase();
+    const avatarColor = m.sender_color || '#0066FF';
+
+    return `
+      <div class="chat-msg-row ${isSelf ? 'self' : 'other'}">
+        <div class="chat-msg-avatar" style="background: ${avatarColor};">${avatarChar}</div>
+        <div class="chat-msg-content">
+          <div class="chat-msg-sender">${escapeHtml(m.sender_name || 'Traveler')}</div>
+          <div class="chat-msg-bubble ${isSelf ? 'self' : 'other'}">
+            ${escapeHtml(m.message)}
+            <div class="chat-msg-time">${timeStr}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+/**
+ * 7. Haversine Distance & Route Calculation
+ */
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c);
+}
+
+function formatDurationHours(hours) {
+  if (hours <= 0) return '0 mins';
+  if (hours < 1) return `${Math.round(hours * 60)} mins`;
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return m > 0 ? `${h}h ${m}m` : `${h} hrs`;
+}
+
+let routeMapInstance = null;
+let routePolylineLayer = null;
+let routeMarkersLayer = null;
+
+export function invalidateRouteMapSize() {
+  if (routeMapInstance) {
+    setTimeout(() => {
+      try { routeMapInstance.invalidateSize(); } catch (e) {}
+    }, 120);
+  }
+}
+
+export function initOrUpdateRouteMap(destinations) {
+  const mapEl = document.getElementById('route-map');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  if (!routeMapInstance) {
+    routeMapInstance = L.map('route-map').setView([20.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(routeMapInstance);
+  }
+
+  if (routePolylineLayer) routeMapInstance.removeLayer(routePolylineLayer);
+  if (routeMarkersLayer) routeMapInstance.removeLayer(routeMarkersLayer);
+
+  routeMarkersLayer = L.layerGroup().addTo(routeMapInstance);
+
+  const validStops = (destinations || []).filter(d => parseFloat(d.lat) && parseFloat(d.lng));
+  if (validStops.length === 0) return;
+
+  const latlngs = [];
+  validStops.forEach((stop, idx) => {
+    const lat = parseFloat(stop.lat);
+    const lng = parseFloat(stop.lng);
+    latlngs.push([lat, lng]);
+
+    const marker = L.circleMarker([lat, lng], {
+      radius: 9,
+      fillColor: idx === 0 ? '#16A34A' : (idx === validStops.length - 1 ? '#DC2626' : '#0066FF'),
+      color: '#FFFFFF',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.95
+    }).addTo(routeMarkersLayer);
+
+    marker.bindPopup(`<b>Stop ${idx + 1}: ${escapeHtml(stop.name)}</b><br>${escapeHtml(stop.stay_notes || '')}`);
+  });
+
+  if (latlngs.length > 1) {
+    routePolylineLayer = L.polyline(latlngs, {
+      color: '#0066FF',
+      weight: 4,
+      dashArray: '8, 8',
+      opacity: 0.85
+    }).addTo(routeMapInstance);
+    try {
+      routeMapInstance.fitBounds(routePolylineLayer.getBounds(), { padding: [40, 40] });
+    } catch (e) {}
+  } else if (latlngs.length === 1) {
+    routeMapInstance.setView(latlngs[0], 9);
+  }
+}
+
+export function renderRouteView(state) {
+  const stops = state.destinations || [];
+  const speedEl = document.getElementById('route-transit-speed');
+  const speedKmh = parseFloat(speedEl ? speedEl.value : 60) || 60;
+
+  let totalKm = 0;
+  const legs = [];
+
+  for (let i = 0; i < stops.length; i++) {
+    if (i > 0) {
+      const prev = stops[i - 1];
+      const curr = stops[i];
+      let legDist = 0;
+      if (prev.lat && prev.lng && curr.lat && curr.lng) {
+        legDist = haversineKm(parseFloat(prev.lat), parseFloat(prev.lng), parseFloat(curr.lat), parseFloat(curr.lng));
+      }
+      totalKm += legDist;
+      const legTime = legDist > 0 ? (legDist / speedKmh) : 0;
+      legs.push({ from: prev.name, to: curr.name, distanceKm: legDist, timeHours: legTime });
+    }
+  }
+
+  const totalHours = totalKm > 0 ? (totalKm / speedKmh) : 0;
+
+  const stopsCountEl = document.getElementById('route-total-stops');
+  if (stopsCountEl) stopsCountEl.textContent = stops.length;
+
+  const totalDistEl = document.getElementById('route-total-distance');
+  if (totalDistEl) totalDistEl.textContent = `${totalKm.toLocaleString()} km`;
+
+  const totalTimeEl = document.getElementById('route-total-time');
+  if (totalTimeEl) totalTimeEl.textContent = formatDurationHours(totalHours);
+
+  const timelineEl = document.getElementById('route-stops-timeline');
+  if (timelineEl) {
+    if (stops.length === 0) {
+      timelineEl.innerHTML = `
+        <div style="text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.88rem;">
+          No destinations added yet. Click <b>"Add Stop"</b> above to connect your travel route!
+        </div>`;
+    } else {
+      let html = '';
+      stops.forEach((stop, idx) => {
+        if (idx > 0 && legs[idx - 1]) {
+          const leg = legs[idx - 1];
+          html += `
+            <div class="route-connector-line">
+              <span class="route-leg-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+                ${leg.distanceKm} km · ~${formatDurationHours(leg.timeHours)}
+              </span>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="route-stop-card">
+            <div class="route-stop-left">
+              <div class="route-stop-num" style="${idx === 0 ? 'background: #16A34A;' : (idx === stops.length - 1 ? 'background: #DC2626;' : '')}">
+                ${idx + 1}
+              </div>
+              <div>
+                <div class="route-stop-name">${escapeHtml(stop.name)}</div>
+                <div class="route-stop-notes">${escapeHtml(stop.stay_notes || 'Waypoint ' + (idx + 1))}</div>
+              </div>
+            </div>
+            <div>
+              <button type="button" class="btn btn-sm btn-ghost btn-remove-stop" data-id="${stop.id}" title="Remove Stop" style="color: var(--color-red); padding: 4px 8px;">
+                ${ICONS.trash}
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      timelineEl.innerHTML = html;
+    }
+  }
+
+  initOrUpdateRouteMap(stops);
+}
+
+/**
+ * 8. Render Settings View & Member Manager
  */
 function renderSettingsView(state) {
   document.getElementById('input-trip-name').value = state.tripName;
   document.getElementById('select-currency').value = state.currency || '₹';
   document.getElementById('input-google-sheet-url').value = state.settings?.googleSheetUrl || '';
-  
-  // Security Passcodes
-  const groupPinInput = document.getElementById('input-setting-group-pin');
-  if (groupPinInput) groupPinInput.value = state.security?.groupPin || '1234';
-  const adminPinInput = document.getElementById('input-setting-admin-pin');
-  if (adminPinInput) adminPinInput.value = state.security?.adminPin || '9999';
 
-  const credsList = document.getElementById('settings-members-credentials-list');
-  if (credsList) {
-    const groupPin = state.security?.groupPin || '1234';
-    credsList.innerHTML = state.members.map(m => {
-      const pin = state.security?.memberPins?.[m.id] || groupPin;
-      return `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: var(--radius-sm);">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="avatar" style="background: ${m.color}; width: 28px; height: 28px; font-size: 0.75rem;">${m.avatar}</span>
-            <span style="font-weight: 600; font-size: 0.85rem;">${escapeHtml(m.name)}</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 0.75rem; color: var(--text-secondary);">Passcode:</span>
-            <span style="font-weight: 700; font-family: monospace; font-size: 0.9rem; background: var(--bg-surface); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); letter-spacing: 1px;">${pin}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
+  const countBadge = document.getElementById('settings-members-count-badge');
+  if (countBadge) countBadge.textContent = state.members.length;
 
-  const countLabel = document.getElementById('settings-members-count-label');
-  if (countLabel) countLabel.textContent = state.members.length;
-
-  const membersList = document.getElementById('settings-members-list');
-  if (membersList) {
+  const travelersList = document.getElementById('settings-travelers-list');
+  if (travelersList) {
     if (state.members.length === 0) {
-      membersList.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">No members yet. Add your friends above!</div>`;
+      travelersList.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">No travelers added yet. Add a planned friend above!</div>`;
     } else {
-      membersList.innerHTML = state.members.map((m) => `
-        <div style="display: flex; gap: 8px; align-items: center; background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 10px; border-radius: var(--radius-sm);">
-          <span class="avatar" style="background: ${m.color};">${m.avatar}</span>
-          <input type="text" class="form-control input-member-rename" data-id="${m.id}" value="${escapeHtml(m.name)}" style="font-weight: 600; padding: 6px 10px;">
-          <button class="btn btn-sm btn-danger btn-remove-member" data-id="${m.id}" title="Remove ${escapeHtml(m.name)}" style="padding: 6px 10px;">
-            ${ICONS.trash}
-          </button>
-        </div>
-      `).join('');
+      travelersList.innerHTML = state.members.map((m) => {
+        const isRegistered = !!m.userId;
+        const roleLabel = m.role === 'admin' ? 'Trip Admin' : 'Member';
+        const statusPill = isRegistered
+          ? `<span style="font-size: 0.7rem; font-weight: 700; color: #059669; background: #D1FAE5; padding: 2px 8px; border-radius: 99px;">Linked & Synced</span>`
+          : `<span style="font-size: 0.7rem; font-weight: 700; color: #D97706; background: #FEF3C7; padding: 2px 8px; border-radius: 99px;">Planned (Placeholder)</span>`;
+
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; border: 1px solid var(--border-color); padding: 10px 14px; border-radius: var(--radius-md);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="avatar" style="background: ${m.color}; width: 34px; height: 34px; font-size: 0.85rem;">${m.avatar}</span>
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <strong style="font-size: 0.95rem; color: var(--text-primary);">${escapeHtml(m.name)}</strong>
+                  <span style="font-size: 0.68rem; font-weight: 700; color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border-color); padding: 1px 6px; border-radius: 4px;">${roleLabel}</span>
+                </div>
+                <div style="margin-top: 3px;">${statusPill}</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn btn-sm btn-secondary btn-rename-member" data-id="${m.id}" data-name="${escapeHtml(m.name)}" style="padding: 4px 10px; font-size: 0.78rem;">
+                Rename
+              </button>
+              ${m.role !== 'admin' ? `
+                <button type="button" class="btn btn-sm btn-danger btn-remove-member" data-id="${m.id}" title="Remove ${escapeHtml(m.name)}" style="padding: 4px 8px;">
+                  ${ICONS.trash}
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   }
 }
@@ -882,6 +1099,13 @@ export function setActiveTab(tabName) {
   document.querySelectorAll('.tab-view').forEach(view => {
     view.style.display = view.id === `view-${tabName}` ? 'block' : 'none';
   });
+
+  if (tabName === 'route') {
+    invalidateRouteMapSize();
+  } else if (tabName === 'chat') {
+    const chatBox = document.getElementById('chat-messages-box');
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
   window.scrollTo({ top: 0, behavior: 'instant' });
 }

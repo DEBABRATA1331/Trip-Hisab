@@ -7,6 +7,7 @@ import { getUser, signOut as supabaseSignOut } from './supabase.js';
 import { stateManager } from './db-state.js';
 import {
   renderApp,
+  renderRouteView,
   showToast,
   setActiveTab,
   setExpenseFilter,
@@ -621,54 +622,167 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById('btn-copy-full-invite').addEventListener('click', () => {
+  document.getElementById('btn-copy-full-invite')?.addEventListener('click', () => {
     const state = stateManager.state;
-    const link = document.getElementById('input-share-link').value;
-    const groupPin = state.security?.groupPin || '1234';
-    const msg = `Trip: ${state.tripName}\n\n` +
-      `Monitor all our trip expenses together live:\n` +
-      `Link: ${link}\n` +
-      `Login ID: Select your Name\n` +
-      `Passcode: ${groupPin}\n\n` +
-      `Open on your phone to track our group hisab!`;
-
+    const link = `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
+    const msg = `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
+      `Track expenses, calculate splits, manage kitty pool, and settle hisab live together.\n` +
+      `Direct Link: ${link}\n` +
+      `Invite Code: ${state.inviteCode || ''}\n\n` +
+      `Official upmarkcurve.com · 256-bit Encrypted Group Channel`;
     navigator.clipboard.writeText(msg).then(() => {
-      showToast('Invitation copied to clipboard!');
+      showToast('Trip invitation copied to clipboard!');
     });
   });
 
-  document.getElementById('btn-share-whatsapp-invite').addEventListener('click', () => {
+  document.getElementById('btn-share-whatsapp-invite')?.addEventListener('click', () => {
     const state = stateManager.state;
-    const link = document.getElementById('input-share-link').value;
-    const groupPin = state.security?.groupPin || '1234';
-    const msg = `Trip: ${state.tripName}\n\n` +
-      `Monitor all our trip expenses together live:\n` +
-      `Link: ${link}\n` +
-      `Login ID: Select your Name\n` +
-      `Passcode: ${groupPin}\n\n` +
-      `Open on your phone to track our group hisab!`;
-
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-    window.open(whatsappUrl, '_blank');
+    const link = `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
+    const msg = `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
+      `Track expenses, calculate splits, manage kitty pool, and settle hisab live together.\n` +
+      `Direct Link: ${link}\n` +
+      `Invite Code: ${state.inviteCode || ''}\n\n` +
+      `Official upmarkcurve.com · 256-bit Encrypted Group Channel`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
   });
 
-  // 17. Security Settings Save (Admin)
-  const btnSaveSecurity = document.getElementById('btn-save-security-settings');
-  if (btnSaveSecurity) {
-    btnSaveSecurity.addEventListener('click', () => {
-      const groupPin = (document.getElementById('input-setting-group-pin').value || '').trim();
-      const adminPin = (document.getElementById('input-setting-admin-pin').value || '').trim();
-
-      if (!groupPin) {
-        alert('Please enter a valid numeric group passcode');
-        return;
-      }
-
-      stateManager.updateSecuritySettings({ groupPin, adminPin });
-      showToast('Passcode settings saved!');
-      renderApp();
+  // Dedicated Dashboard Share Banner Buttons
+  document.getElementById('btn-dash-copy-link')?.addEventListener('click', () => {
+    const link = document.getElementById('dash-share-url-input')?.value || `${window.location.origin}/index.html?trip=${stateManager.state.tripId || ''}`;
+    navigator.clipboard.writeText(link).then(() => {
+      showToast('Trip invite link copied!');
     });
-  }
+  });
+
+  document.getElementById('btn-dash-share-whatsapp')?.addEventListener('click', () => {
+    const state = stateManager.state;
+    const link = document.getElementById('dash-share-url-input')?.value || `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
+    const msg = `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
+      `Monitor all our trip expenses & hisab together live.\n` +
+      `Link: ${link}\n` +
+      `Invite Code: ${state.inviteCode || ''}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+  });
+
+  // 17. Trip Chat: Send Message
+  document.getElementById('form-chat-send')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('input-chat-message');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    try {
+      await stateManager.sendMessage(text);
+      renderApp();
+    } catch (err) {
+      showToast('Failed to send message: ' + (err.message || ''));
+    }
+  });
+
+  // 18. Route & Waypoints: Add Stop Modal & Preset chips
+  document.getElementById('btn-open-add-stop')?.addEventListener('click', () => {
+    document.getElementById('form-add-stop')?.reset();
+    openModal('modal-add-stop');
+    setTimeout(() => document.getElementById('input-stop-name')?.focus(), 60);
+  });
+
+  document.querySelectorAll('#preset-cities-chips .chip-preset').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('input-stop-name').value = chip.dataset.name;
+      document.getElementById('input-stop-lat').value = chip.dataset.lat;
+      document.getElementById('input-stop-lng').value = chip.dataset.lng;
+    });
+  });
+
+  document.getElementById('form-add-stop')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('input-stop-name').value.trim();
+    const lat = parseFloat(document.getElementById('input-stop-lat').value) || 0;
+    const lng = parseFloat(document.getElementById('input-stop-lng').value) || 0;
+    const stayNotes = document.getElementById('input-stop-notes').value.trim();
+
+    closeModal('modal-add-stop');
+    showToast(`Adding stop ${name}...`);
+    try {
+      await stateManager.addDestination({ name, lat, lng, stayNotes });
+      renderApp();
+      showToast(`Stop added: ${name}`);
+    } catch (err) {
+      showToast('Failed to add stop: ' + (err.message || ''));
+    }
+  });
+
+  // Delegate for dynamic buttons: remove stop, rename member, remove member
+  document.addEventListener('click', async (e) => {
+    const btnRemoveStop = e.target.closest('.btn-remove-stop');
+    if (btnRemoveStop) {
+      const stopId = btnRemoveStop.dataset.id;
+      if (confirm('Remove this destination stop?')) {
+        await stateManager.removeDestination(stopId);
+        renderApp();
+      }
+      return;
+    }
+
+    const btnRenameMember = e.target.closest('.btn-rename-member');
+    if (btnRenameMember) {
+      const memberId = btnRenameMember.dataset.id;
+      const currentName = btnRenameMember.dataset.name || '';
+      document.getElementById('input-rename-member-id').value = memberId;
+      document.getElementById('input-rename-member-name').value = currentName;
+      openModal('modal-rename-member');
+      setTimeout(() => document.getElementById('input-rename-member-name')?.focus(), 60);
+      return;
+    }
+
+    const btnRemoveMember = e.target.closest('.btn-remove-member');
+    if (btnRemoveMember) {
+      const memberId = btnRemoveMember.dataset.id;
+      if (confirm('Remove this traveler from the trip?')) {
+        await stateManager.removeMember(memberId);
+        renderApp();
+        showToast('Traveler removed');
+      }
+      return;
+    }
+  });
+
+  // Save Renamed Member
+  document.getElementById('form-rename-member')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const memberId = document.getElementById('input-rename-member-id').value;
+    const newName = document.getElementById('input-rename-member-name').value.trim();
+    if (!newName) return;
+    closeModal('modal-rename-member');
+    try {
+      await stateManager.renameMember(memberId, newName);
+      renderApp();
+      showToast(`Traveler renamed to ${newName}`);
+    } catch (err) {
+      showToast('Failed to rename: ' + (err.message || ''));
+    }
+  });
+
+  // Settings: Add Planned Friend (Placeholder to avoid dual entry)
+  document.getElementById('form-settings-add-placeholder')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('input-settings-friend-name');
+    const name = (input.value || '').trim();
+    if (!name) return;
+    input.value = '';
+    try {
+      await stateManager.addMember(name);
+      renderApp();
+      showToast(`Planned friend added: ${name}`);
+    } catch (err) {
+      showToast('Could not add friend: ' + (err.message || ''));
+    }
+  });
+
+  // Route Speed Change
+  document.getElementById('route-transit-speed')?.addEventListener('change', () => {
+    renderRouteView(stateManager.state);
+  });
 }
 
 // --- Auth State Management (Connected to Supabase User) ---

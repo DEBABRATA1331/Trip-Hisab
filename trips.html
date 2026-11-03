@@ -596,6 +596,14 @@
           <label>Enter 6-Character Invite Code</label>
           <input type="text" id="join-invite-code" placeholder="ABC123" maxlength="8" style="font-size:1.5rem; font-weight:800; letter-spacing:6px; text-transform:uppercase; text-align:center;" required autofocus autocomplete="off">
         </div>
+
+        <!-- Claim Traveler Name container (Avoids Dual Entry) -->
+        <div id="join-claim-container" style="display:none; background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 14px; margin-bottom: 14px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">Who are you in this trip?</div>
+          <div style="font-size: 0.78rem; color: #64748B; margin-bottom: 10px;">Select your name to link expenses already entered for you, or join as a new friend:</div>
+          <div id="join-claim-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        </div>
+
         <div class="btn-row">
           <button type="button" class="btn btn-ghost" id="btn-cancel-join-trip">Cancel</button>
           <button type="submit" class="btn btn-blue" id="btn-join-trip-submit">Join Trip</button>
@@ -831,14 +839,49 @@
       try {
         const code = document.getElementById('join-invite-code').value.trim().toUpperCase();
         const name = currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'Traveler';
-        const { trip, alreadyMember } = await joinTripByCode(code, name);
-        closeModal('modal-join-trip');
-        if (alreadyMember) {
-          window.location.href = `./index.html?trip=${trip.id}`;
-        } else {
-          await loadTrips();
-          window.location.href = `./index.html?trip=${trip.id}`;
+        const res = await joinTripByCode(code, name);
+
+        // If trip has unlinked placeholder friends, let the user pick who they are
+        if (res.needsClaimChoice && res.placeholders && res.placeholders.length > 0) {
+          const claimBox = document.getElementById('join-claim-container');
+          const btnsContainer = document.getElementById('join-claim-buttons');
+          claimBox.style.display = 'block';
+          btnsContainer.innerHTML = res.placeholders.map(p => `
+            <button type="button" class="btn btn-secondary btn-claim-name" data-id="${p.id}" data-name="${escHtml(p.display_name)}" style="padding: 6px 14px; font-weight: 700;">
+              I am ${escHtml(p.display_name)}
+            </button>
+          `).join('') + `
+            <button type="button" class="btn btn-ghost btn-claim-new" style="padding: 6px 14px; font-weight: 600;">
+              + None of these (New Friend)
+            </button>
+          `;
+
+          // Bind claim buttons
+          btnsContainer.querySelectorAll('.btn-claim-name').forEach(b => {
+            b.addEventListener('click', async () => {
+              const claimId = b.dataset.id;
+              const claimedName = b.dataset.name;
+              b.disabled = true;
+              b.textContent = 'Linking...';
+              await joinTripByCode(code, claimedName, claimId);
+              closeModal('modal-join-trip');
+              window.location.href = `./index.html?trip=${res.trip.id}`;
+            });
+          });
+
+          btnsContainer.querySelector('.btn-claim-new').addEventListener('click', async () => {
+            await joinTripByCode(code, name, null);
+            closeModal('modal-join-trip');
+            window.location.href = `./index.html?trip=${res.trip.id}`;
+          });
+
+          btn.disabled = false;
+          btn.innerHTML = 'Join Trip';
+          return;
         }
+
+        closeModal('modal-join-trip');
+        window.location.href = `./index.html?trip=${res.trip.id}`;
         document.getElementById('form-join-trip').reset();
       } catch (err) {
         alertEl.className = 'alert alert-error';

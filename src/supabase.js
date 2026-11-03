@@ -223,8 +223,8 @@ export async function updateTrip(tripId, updates) {
   return data;
 }
 
-/** Join a trip by invite code */
-export async function joinTripByCode(inviteCode, displayName) {
+/** Join a trip by invite code, with optional claiming of an existing placeholder member */
+export async function joinTripByCode(inviteCode, displayName, claimMemberId = null) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
 
@@ -237,26 +237,77 @@ export async function joinTripByCode(inviteCode, displayName) {
 
   if (tripErr || !trip) throw new Error('Invalid invite code. Please check and try again.');
 
-  // Check if already a member
+  // Check if user is already a member
   const { data: existing } = await supabase
     .from('trip_members')
-    .select('id')
+    .select('id, display_name, role')
     .eq('trip_id', trip.id)
     .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (existing) return { trip, alreadyMember: true, member: existing };
+
+  // If user explicitly chose to claim an existing unlinked placeholder (e.g. "Rohan")
+  if (claimMemberId) {
+    const finalName = displayName || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Traveler';
+    const { data: claimed, error: claimErr } = await supabase
+      .from('trip_members')
+      .update({
+        user_id: user.id,
+        display_name: finalName
+      })
+      .eq('id', claimMemberId)
+      .select()
+      .single();
+
+    if (claimErr) throw claimErr;
+    return { trip, alreadyMember: false, claimed: true, member: claimed };
+  }
+
+  const cleanName = (displayName || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Traveler').trim();
+
+  // Check if there is an unlinked placeholder with this exact name to auto-link
+  const { data: placeholders } = await supabase
+    .from('trip_members')
+    .select('id, display_name')
+    .eq('trip_id', trip.id)
+    .is('user_id', null);
+
+  const matched = (placeholders || []).find(p => p.display_name.trim().toLowerCase() === cleanName.toLowerCase());
+  if (matched) {
+    const { data: autoLinked, error: linkErr } = await supabase
+      .from('trip_members')
+      .update({
+        user_id: user.id,
+        display_name: cleanName
+      })
+      .eq('id', matched.id)
+      .select()
+      .single();
+    if (!linkErr && autoLinked) {
+      return { trip, alreadyMember: false, claimed: true, member: autoLinked };
+    }
+  }
+
+  // If there are unlinked placeholder members, return them so UI can ask the user if they are one of them
+  if (placeholders && placeholders.length > 0 && !displayName) {
+    return { trip, needsClaimChoice: true, placeholders };
+  }
+
+  // Otherwise, join as a new member
+  const { data: newMember, error: joinErr } = await supabase
+    .from('trip_members')
+    .insert({
+      trip_id: trip.id,
+      user_id: user.id,
+      display_name: cleanName,
+      role: 'member'
+    })
+    .select()
     .single();
 
-  if (existing) return { trip, alreadyMember: true };
-
-  // Join!
-  const { error: joinErr } = await supabase.from('trip_members').insert({
-    trip_id: trip.id,
-    user_id: user.id,
-    display_name: displayName || user.user_metadata?.display_name || user.email,
-    role: 'member'
-  });
-
   if (joinErr) throw joinErr;
-  return { trip, alreadyMember: false };
+  return { trip, alreadyMember: false, member: newMember };
 }
 
 /** Get all members of a trip */
@@ -268,6 +319,45 @@ export async function getTripMembers(tripId) {
     .order('joined_at', { ascending: true });
   if (error) throw error;
   return data || [];
+}
+
+/** Add an unlinked placeholder member (e.g. Admin adds "Rohan" before Rohan joins) */
+export async function addPlaceholderMember(tripId, displayName) {
+  const cleanName = String(displayName || '').trim();
+  if (!cleanName) throw new Error('Member name is required');
+  const { data, error } = await supabase
+    .from('trip_members')
+    .insert({
+      trip_id: tripId,
+      user_id: null,
+      display_name: cleanName,
+      role: 'member'
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Rename a member */
+export async function renameMember(memberId, newDisplayName) {
+  const { data, error } = await supabase
+    .from('trip_members')
+    .update({ display_name: newDisplayName.trim() })
+    .eq('id', memberId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Delete a member */
+export async function deleteTripMember(memberId) {
+  const { error } = await supabase
+    .from('trip_members')
+    .delete()
+    .eq('id', memberId);
+  if (error) throw error;
 }
 
 // ─── EXPENSE HELPERS ──────────────────────────────────────────────────────────
@@ -454,6 +544,87 @@ export async function deleteNote(id) {
   if (error) throw error;
 }
 
+// ─── CHAT HELPERS ────────────────────────────────────────────────────────────
+
+/** Get trip messages */
+export async function getTripMessages(tripId) {
+  const { data, error } = await supabase
+    .from('trip_messages')
+    .select('*')
+    .eq('trip_id', tripId)
+    .order('created_at', { ascending: true })
+    .limit(100);
+  if (error) {
+    console.warn('Could not load messages (table might not exist yet):', error);
+    return [];
+  }
+  return data || [];
+}
+
+/** Send a trip message */
+export async function sendTripMessage({ tripId, message, senderName, senderColor }) {
+  const user = await getUser();
+  const { data, error } = await supabase
+    .from('trip_messages')
+    .insert({
+      trip_id: tripId,
+      user_id: user?.id,
+      sender_name: senderName || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Traveler',
+      sender_color: senderColor || '#0066FF',
+      message: message.trim()
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// ─── DESTINATIONS & ROUTE HELPERS ─────────────────────────────────────────────
+
+/** Get trip destinations / route stops */
+export async function getTripDestinations(tripId) {
+  const { data, error } = await supabase
+    .from('trip_destinations')
+    .select('*')
+    .eq('trip_id', tripId)
+    .order('stop_order', { ascending: true });
+  if (error) {
+    console.warn('Could not load destinations:', error);
+    return [];
+  }
+  return data || [];
+}
+
+/** Add a destination stop */
+export async function addTripDestination({ tripId, name, lat, lng, stopOrder, stayNotes, estDuration }) {
+  const user = await getUser();
+  const { data, error } = await supabase
+    .from('trip_destinations')
+    .insert({
+      trip_id: tripId,
+      name: name.trim(),
+      lat: parseFloat(lat) || 0,
+      lng: parseFloat(lng) || 0,
+      stop_order: parseInt(stopOrder, 10) || 1,
+      stay_notes: stayNotes || '',
+      est_duration: estDuration || '',
+      created_by: user?.id
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Delete a destination stop */
+export async function deleteTripDestination(id) {
+  const { error } = await supabase
+    .from('trip_destinations')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
 // ─── REALTIME ────────────────────────────────────────────────────────────────
 
 /**
@@ -468,6 +639,8 @@ export function subscribeToTrip(tripId, callback) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'settlements', filter: `trip_id=eq.${tripId}` }, payload => callback({ table: 'settlements', ...payload }))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `trip_id=eq.${tripId}` }, payload => callback({ table: 'notes', ...payload }))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_members', filter: `trip_id=eq.${tripId}` }, payload => callback({ table: 'trip_members', ...payload }))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_messages', filter: `trip_id=eq.${tripId}` }, payload => callback({ table: 'trip_messages', ...payload }))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_destinations', filter: `trip_id=eq.${tripId}` }, payload => callback({ table: 'trip_destinations', ...payload }))
     .subscribe();
 
   // Return unsubscribe function

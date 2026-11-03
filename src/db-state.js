@@ -9,10 +9,18 @@ import {
   getUser,
   getTrip,
   getTripMembers,
+  addPlaceholderMember,
+  renameMember as dbRenameMember,
+  deleteTripMember as dbDeleteMember,
   getExpenses,
   getKittyTransactions,
   getSettlements,
   getNotes,
+  getTripMessages,
+  sendTripMessage,
+  getTripDestinations,
+  addTripDestination as dbAddDestination,
+  deleteTripDestination as dbDeleteDestination,
   addExpense as dbAddExpense,
   updateExpense as dbUpdateExpense,
   deleteExpense as dbDeleteExpense,
@@ -35,11 +43,14 @@ class SupabaseStateManager {
     this.state = {
       tripName: 'Loading...',
       currency: '₹',
+      budget: 0,
       members: [],
       expenses: [],
       kitty: { balance: 0, history: [] },
       settlements: [],
       notes: [],
+      messages: [],
+      destinations: [],
       security: { enabled: false },
       settings: { syncStatus: 'loading' }
     };
@@ -61,13 +72,15 @@ class SupabaseStateManager {
 
   async loadAll() {
     try {
-      const [trip, members, expenses, kittyTx, settlements, notes] = await Promise.all([
+      const [trip, members, expenses, kittyTx, settlements, notes, messages, destinations] = await Promise.all([
         getTrip(this.tripId),
         getTripMembers(this.tripId),
         getExpenses(this.tripId),
         getKittyTransactions(this.tripId),
         getSettlements(this.tripId),
-        getNotes(this.tripId)
+        getNotes(this.tripId),
+        getTripMessages(this.tripId),
+        getTripDestinations(this.tripId)
       ]);
 
       // Map DB format → app format
@@ -98,6 +111,8 @@ class SupabaseStateManager {
         kitty: this._buildKittyState(kittyTx),
         settlements: this._mapSettlements(settlements, mappedMembers),
         notes: this._mapNotes(notes),
+        messages: messages || [],
+        destinations: destinations || [],
         security: { enabled: false },
         settings: { syncStatus: 'synced', lastSyncedAt: new Date().toISOString() }
       };
@@ -238,17 +253,60 @@ class SupabaseStateManager {
   // ─── MEMBERS ─────────────────────────────────────────────────────────────
 
   async addMember(name) {
-    // Adding a member creates an "anonymous" trip_member record (no auth user)
-    // For simplicity, we insert a record with user_id = current user's (they manage it)
-    // In a full version you'd invite them. For now, add as display name placeholder.
-    const { error } = await supabase.from('trip_members').insert({
-      trip_id: this.tripId,
-      user_id: this.currentUser.id, // placeholder - will be overridden when they log in
-      display_name: name.trim(),
-      role: 'member'
+    const cleanName = String(name || '').trim();
+    if (!cleanName) return;
+    await addPlaceholderMember(this.tripId, cleanName);
+    await this.loadAll();
+  }
+
+  async renameMember(memberId, newName) {
+    const cleanName = String(newName || '').trim();
+    if (!cleanName) return;
+    await dbRenameMember(memberId, cleanName);
+    await this.loadAll();
+  }
+
+  async removeMember(memberId) {
+    if (!memberId) return;
+    await dbDeleteMember(memberId);
+    await this.loadAll();
+  }
+
+  // ─── CHAT MESSAGES ────────────────────────────────────────────────────────
+
+  async sendMessage(text) {
+    const cleanText = String(text || '').trim();
+    if (!cleanText) return;
+    await sendTripMessage({
+      tripId: this.tripId,
+      message: cleanText,
+      senderName: this.currentMember?.name || 'Traveler',
+      senderColor: this.currentMember?.color || '#0066FF'
     });
-    // Note: This will fail due to UNIQUE constraint if they're already a member.
-    // For now just reload - full invite flow via invite code is preferred.
+    await this.loadAll();
+  }
+
+  // ─── ROUTE & DESTINATIONS ─────────────────────────────────────────────────
+
+  async addDestination({ name, lat, lng, stayNotes, estDuration }) {
+    const cleanName = String(name || '').trim();
+    if (!cleanName) return;
+    const currentCount = this.state.destinations?.length || 0;
+    await dbAddDestination({
+      tripId: this.tripId,
+      name: cleanName,
+      lat: lat || 0,
+      lng: lng || 0,
+      stopOrder: currentCount + 1,
+      stayNotes: stayNotes || '',
+      estDuration: estDuration || ''
+    });
+    await this.loadAll();
+  }
+
+  async removeDestination(id) {
+    if (!id) return;
+    await dbDeleteDestination(id);
     await this.loadAll();
   }
 
