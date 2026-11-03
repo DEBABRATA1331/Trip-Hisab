@@ -6,219 +6,273 @@
   <title>My Trips | Upmark Curve (The Trip Hisab)</title>
   
   <meta name="title" content="My Trips | Upmark Curve (The Trip Hisab)">
-  <meta name="description" content="Manage all your group trips, vacation budgets, and hisab trackers in one place on Upmark Curve (The Trip Hisab). Create new trips or join friends with an invite code.">
+  <meta name="description" content="Manage all your group trips, vacation budgets, live chat, and route calculators in one place on Upmark Curve (The Trip Hisab).">
   <meta name="keywords" content="upmarkcurve trips, group travel dashboard, the trip hisab my trips, vacation expenses, travel budget calculator">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://upmarkcurve.com/trips.html">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      min-height: 100vh;
-      background: #F8FAFC;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100dvh;
+      background: #F4F7FB;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       color: #0F172A;
       -webkit-font-smoothing: antialiased;
+      padding-bottom: 40px;
     }
 
-    /* Top Navigation */
+    /* Top Bar */
     .top-bar {
-      background: #0F172A;
+      background: rgba(15, 23, 42, 0.96);
       color: #fff;
-      padding: 12px 20px;
+      padding: 12px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #1E293B;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       position: sticky;
       top: 0;
       z-index: 50;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
     }
     .top-bar-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      font-family: 'Space Grotesk', sans-serif;
       font-size: 1.05rem;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: -0.3px;
       text-decoration: none;
       color: #fff;
     }
     .top-bar-brand img {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,102,255,0.3);
+      box-shadow: 0 4px 12px rgba(0,102,255,0.35);
     }
     .top-bar-brand span {
       color: #38BDF8;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
     .user-info {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 0.85rem;
+      gap: 8px;
+      font-size: 0.84rem;
     }
     .avatar {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: linear-gradient(135deg, #0066FF, #00D2FF);
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-      box-shadow: 0 2px 6px rgba(0,102,255,0.25);
+      font-weight: 800;
+      font-size: 0.85rem;
     }
     .btn-logout-top {
       background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.14);
       color: #E2E8F0;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
+      padding: 6px 11px;
+      border-radius: 9px;
+      font-size: 0.76rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 5px;
+      font-family: inherit;
     }
     .btn-logout-top:hover {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.22);
+      border-color: rgba(239, 68, 68, 0.45);
       color: #FCA5A5;
     }
 
-    /* Layout Container */
     .main {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
-      padding: 24px 16px;
+      padding: 20px 16px;
     }
 
-    /* Gen-Z Animated Action Cards */
-    .section-header {
+    /* Auckland Skyline Mosaic Hero Card */
+    .skyline-banner {
+      position: relative;
+      height: 150px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #070B14;
+      margin-bottom: 20px;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px 22px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
-    .section-title {
-      font-size: 1.25rem;
+    .skyline-banner canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+    .skyline-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 11, 20, 0.18) 0%, rgba(7, 11, 20, 0.86) 100%);
+      pointer-events: none;
+    }
+    .skyline-banner-content {
+      position: relative;
+      z-index: 2;
+      color: #FFFFFF;
+    }
+    .skyline-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #0F172A;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #38BDF8;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 6px;
+    }
+    .skyline-banner-content h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+    .skyline-banner-content p {
+      font-size: 0.82rem;
+      color: #CBD5E1;
+      margin-top: 2px;
     }
 
+    /* Quick Action Cards */
     .action-cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
     }
     .action-card {
-      background: #fff;
+      background: #FFFFFF;
       border: 1.5px solid #E2E8F0;
       border-radius: 18px;
-      padding: 20px 16px;
+      padding: 18px 14px;
       cursor: pointer;
       text-align: center;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
     }
-    .action-card:active {
-      transform: scale(0.97);
-    }
+    .action-card:active { transform: scale(0.97); }
     .action-card:hover {
       border-color: #0066FF;
-      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.12);
+      box-shadow: 0 10px 24px rgba(0, 102, 255, 0.12);
       transform: translateY(-2px);
     }
     .action-card.primary {
       background: linear-gradient(135deg, #0066FF 0%, #0284C7 100%);
       border-color: #0066FF;
       color: #fff;
-      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.22);
-    }
-    .action-card.primary:hover {
-      box-shadow: 0 12px 30px rgba(0, 102, 255, 0.35);
+      box-shadow: 0 10px 24px rgba(0, 102, 255, 0.24);
     }
     .action-card .ac-icon-box {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: #F1F5F9;
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      background: #EFF6FF;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 10px;
       color: #0066FF;
-      transition: transform 0.2s ease;
     }
     .action-card.primary .ac-icon-box {
       background: rgba(255, 255, 255, 0.2);
       color: #fff;
     }
-    .action-card:hover .ac-icon-box {
-      transform: scale(1.1);
-    }
     .action-card .ac-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      letter-spacing: -0.2px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.98rem;
+      font-weight: 700;
     }
     .action-card .ac-sub {
       font-size: 0.74rem;
-      margin-top: 4px;
-      opacity: 0.75;
+      margin-top: 3px;
+      opacity: 0.82;
     }
 
-    /* Trip List Cards */
-    .trip-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 16px 20px;
-      margin-bottom: 12px;
-      border: 1.5px solid #E2E8F0;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-      animation: slideUpFade 0.3s ease-out;
+      margin-bottom: 14px;
     }
-    .trip-card:active {
-      transform: scale(0.98);
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Trip Cards */
+    .trip-card {
+      background: #FFFFFF;
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      border: 1.5px solid #E2E8F0;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
     }
     .trip-card:hover {
       border-color: #0066FF;
-      box-shadow: 0 8px 24px rgba(0,102,255,0.1);
-      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(0, 102, 255, 0.1);
+      transform: translateY(-1px);
     }
     .trip-card-left {
       display: flex;
       align-items: center;
       gap: 14px;
+      min-width: 0;
     }
     .trip-icon-box {
-      width: 46px;
-      height: 46px;
+      width: 44px;
+      height: 44px;
       background: linear-gradient(135deg, #0F172A, #1E3A5F);
-      border-radius: 14px;
+      border-radius: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -226,73 +280,71 @@
       flex-shrink: 0;
     }
     .trip-name {
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.02rem;
+      font-weight: 700;
       color: #0F172A;
-      letter-spacing: -0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .trip-meta {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: #64748B;
-      margin-top: 3px;
+      margin-top: 4px;
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
     }
     .trip-code-pill {
-      background: #F1F5F9;
-      color: #0F172A;
-      padding: 2px 6px;
+      background: #EFF6FF;
+      color: #0066FF;
+      border: 1px solid #BFDBFE;
+      padding: 1px 7px;
       border-radius: 6px;
-      font-family: monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
+      font-size: 0.73rem;
       letter-spacing: 0.5px;
     }
     .trip-role-badge {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       padding: 4px 10px;
-      border-radius: 20px;
-      background: #EFF6FF;
-      color: #0066FF;
-      letter-spacing: 0.2px;
+      border-radius: 99px;
+      background: #F1F5F9;
+      color: #475569;
     }
     .trip-role-badge.admin {
-      background: #0066FF;
-      color: #fff;
-    }
-    .arrow-icon {
-      color: #94A3B8;
-      display: flex;
-      align-items: center;
+      background: #EFF6FF;
+      color: #0066FF;
+      border: 1px solid #BFDBFE;
     }
 
-    /* Empty state */
     .empty-state {
       text-align: center;
-      padding: 48px 20px;
+      padding: 44px 20px;
       color: #64748B;
-      background: #fff;
+      background: #FFFFFF;
       border-radius: 20px;
       border: 1.5px dashed #CBD5E1;
     }
     .empty-state .empty-icon-svg {
-      width: 64px;
-      height: 64px;
+      width: 56px;
+      height: 56px;
       color: #94A3B8;
       margin: 0 auto 12px;
       display: block;
     }
     .empty-state h3 {
-      font-size: 1.1rem;
-      font-weight: 800;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.08rem;
+      font-weight: 700;
       color: #0F172A;
       margin-bottom: 4px;
     }
-    .empty-state p {
-      font-size: 0.85rem;
-      line-height: 1.5;
-    }
+    .empty-state p { font-size: 0.84rem; line-height: 1.5; }
 
     /* Modals */
     .modal-overlay {
@@ -307,7 +359,6 @@
       justify-content: center;
       z-index: 9999 !important;
       padding: 16px;
-      transition: opacity 0.2s ease;
     }
     .modal-overlay.open,
     .modal-overlay.active {
@@ -318,13 +369,12 @@
     .modal-box {
       background: #fff;
       border-radius: 22px;
-      padding: 28px 24px;
+      padding: 26px 22px;
       width: 100%;
-      max-width: 420px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      max-width: 430px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.32);
       position: relative;
       z-index: 10000;
-      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .modal-header-row {
       display: flex;
@@ -333,8 +383,9 @@
       margin-bottom: 18px;
     }
     .modal-header-row h2 {
+      font-family: 'Space Grotesk', sans-serif;
       font-size: 1.15rem;
-      font-weight: 800;
+      font-weight: 700;
       color: #0F172A;
       display: flex;
       align-items: center;
@@ -351,25 +402,21 @@
       justify-content: center;
       cursor: pointer;
       color: #64748B;
-      transition: background 0.2s;
-    }
-    .modal-close-btn:hover {
-      background: #E2E8F0;
-      color: #0F172A;
+      font-size: 1.1rem;
     }
 
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
     input, select {
       width: 100%;
       padding: 11px 14px;
       border: 1.5px solid #E2E8F0;
       border-radius: 12px;
-      font-size: 0.95rem;
+      font-family: inherit;
+      font-size: 0.94rem;
       color: #0F172A;
       background: #F8FAFC;
       outline: none;
-      transition: all 0.2s;
     }
     input:focus, select:focus {
       border-color: #0066FF;
@@ -377,11 +424,12 @@
       box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
     }
 
-    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 18px; }
     .btn {
-      padding: 12px 18px;
+      padding: 12px 16px;
       border-radius: 12px;
-      font-size: 0.92rem;
+      font-family: inherit;
+      font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
       border: none;
@@ -390,49 +438,36 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.2s;
     }
-    .btn:active {
-      transform: scale(0.97);
-    }
-    .btn-blue {
-      background: #0066FF;
-      color: #fff;
-    }
+    .btn-blue { background: #0066FF; color: #fff; }
     .btn-blue:hover { background: #0052CC; }
-    .btn-blue:disabled { background: #93C5FD; cursor: not-allowed; }
-    .btn-ghost {
-      background: #F1F5F9;
-      color: #334155;
-    }
-    .btn-ghost:hover { background: #E2E8F0; }
+    .btn-ghost { background: #F1F5F9; color: #334155; }
 
-    .alert { padding: 11px 14px; border-radius: 10px; font-size: 0.84rem; margin-bottom: 14px; line-height: 1.4; }
-    .alert-error { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
-    .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+    .alert { padding: 11px 14px; border-radius: 10px; font-size: 0.83rem; font-weight: 600; margin-bottom: 14px; }
+    .alert-error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .alert-success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
 
     .invite-code-display {
       background: linear-gradient(135deg, #EFF6FF 0%, #E0F2FE 100%);
       border: 2px dashed #93C5FD;
       border-radius: 16px;
-      padding: 18px;
+      padding: 16px;
       text-align: center;
-      margin: 16px 0;
+      margin: 14px 0;
     }
     .invite-code-display code {
-      font-size: 2.2rem;
-      font-weight: 900;
-      letter-spacing: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 7px;
       color: #0066FF;
-      font-family: monospace;
     }
 
-    /* Loading screen */
     .loading-screen {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 60vh;
+      min-height: 45vh;
       flex-direction: column;
       gap: 14px;
       color: #64748B;
@@ -448,7 +483,6 @@
     }
     .loading-dot:nth-child(2) { animation-delay: 0.2s; }
     .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-
     .spinner {
       display: inline-block;
       width: 15px;
@@ -458,25 +492,26 @@
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
-    @keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 480px) {
+      .user-name-label { display: none; }
+      .skyline-banner { height: 136px; padding: 16px 18px; }
+      .skyline-banner-content h1 { font-size: 1.25rem; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
   <header class="top-bar">
-    <a href="./trips.html" class="top-bar-brand" title="Upmark Curve - My Trips">
+    <a href="./trips.html" class="top-bar-brand">
       <img src="./logo.svg" alt="Upmark Curve Logo">
-      <div>Upmark Curve <span>· The Trip Hisab</span></div>
+      <div>Upmark Curve <span>· Trip Hisab</span></div>
     </a>
     <div class="user-info">
       <div class="avatar" id="user-avatar">U</div>
-      <span id="user-name-display" style="font-weight: 600;">Loading...</span>
+      <span id="user-name-display" class="user-name-label" style="font-weight: 700;">Loading...</span>
       <button class="btn-logout-top" id="btn-logout" title="Log Out">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span>Logout</span>
@@ -485,28 +520,37 @@
   </header>
 
   <main class="main">
+    <!-- 21st.dev Auckland Skyline Mosaic Hero Banner -->
+    <div class="skyline-banner">
+      <canvas id="trips-ascii-canvas"></canvas>
+      <div class="skyline-banner-overlay"></div>
+      <div class="skyline-banner-content">
+        <div class="skyline-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+          <span>Live Cloud Trips</span>
+        </div>
+        <h1>Your Group Trips & Hisab</h1>
+        <p>Create a trip or join friends instantly via invite code or shared link</p>
+      </div>
+    </div>
 
-    <!-- Loading Screen -->
     <div class="loading-screen" id="loading-screen">
       <div>
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
       </div>
-      <span style="font-size: 0.9rem; font-weight: 600;">Loading your trips...</span>
+      <span style="font-size: 0.88rem; font-weight: 600;">Loading your trips...</span>
     </div>
 
-    <!-- Main Content -->
     <div id="main-content" style="display:none;">
-
-      <!-- Quick Action Cards -->
       <div class="action-cards">
         <div class="action-card primary" id="btn-new-trip">
           <div class="ac-icon-box">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </div>
           <div class="ac-title">New Trip</div>
-          <div class="ac-sub">Create & invite friends</div>
+          <div class="ac-sub">Start & invite friends</div>
         </div>
 
         <div class="action-card" id="btn-join-trip">
@@ -514,26 +558,18 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           </div>
           <div class="ac-title">Join a Trip</div>
-          <div class="ac-sub">Enter 6-character code</div>
+          <div class="ac-sub">Enter code or paste link</div>
         </div>
       </div>
 
       <div class="section-header">
         <div class="section-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.5"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
-          <span>Your Active Trips</span>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+          <span>Active Trips</span>
         </div>
       </div>
 
-      <!-- Trips List Container -->
-      <div id="trips-list">
-        <div class="empty-state">
-          <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2.1-6.4z"/></svg>
-          <h3>No trips yet</h3>
-          <p>Create a new trip or ask a friend for their invite code to join!</p>
-        </div>
-      </div>
-
+      <div id="trips-list"></div>
     </div>
   </main>
 
@@ -553,7 +589,7 @@
       <form id="form-new-trip">
         <div class="form-group">
           <label>Trip Title</label>
-          <input type="text" id="new-trip-name" placeholder="e.g. Goa Vacation, Manali Trip..." required autofocus>
+          <input type="text" id="new-trip-name" placeholder="e.g. Goa Roadtrip, Manali 2026..." required>
         </div>
         <div class="form-group">
           <label>Currency</label>
@@ -578,7 +614,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Join Trip -->
+  <!-- MODAL: Join Trip (Supports 6-char Code OR Full Trip Link) -->
   <div class="modal-overlay" id="modal-join-trip">
     <div class="modal-box">
       <div class="modal-header-row">
@@ -593,14 +629,13 @@
 
       <form id="form-join-trip">
         <div class="form-group">
-          <label>Enter 6-Character Invite Code</label>
-          <input type="text" id="join-invite-code" placeholder="ABC123" maxlength="8" style="font-size:1.5rem; font-weight:800; letter-spacing:6px; text-transform:uppercase; text-align:center;" required autofocus autocomplete="off">
+          <label>Enter 6-Digit Invite Code or Paste Shared Trip Link</label>
+          <input type="text" id="join-invite-code" placeholder="e.g. AB12CD or paste link..." style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; font-weight:700; text-align:center;" required autocomplete="off">
         </div>
 
-        <!-- Claim Traveler Name container (Avoids Dual Entry) -->
         <div id="join-claim-container" style="display:none; background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-          <div style="font-size: 0.85rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">Who are you in this trip?</div>
-          <div style="font-size: 0.78rem; color: #64748B; margin-bottom: 10px;">Select your name to link expenses already entered for you, or join as a new friend:</div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">Pick your name in this trip:</div>
+          <div style="font-size: 0.76rem; color: #64748B; margin-bottom: 10px;">Tap your name if the admin already added you, or join as a new traveler:</div>
           <div id="join-claim-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
         </div>
 
@@ -612,31 +647,25 @@
     </div>
   </div>
 
-  <!-- MODAL: Trip Created - Invite Friends -->
+  <!-- MODAL: Trip Created -->
   <div class="modal-overlay" id="modal-invite-code">
     <div class="modal-box" style="text-align:center;">
-      <div style="width: 52px; height: 52px; border-radius: 16px; background: #D1FAE5; color: #059669; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <div style="width: 50px; height: 50px; border-radius: 15px; background: #D1FAE5; color: #059669; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2>Trip Created!</h2>
-      <p style="font-size:0.85rem; color:#64748B; margin-top: 4px;">Share this invite code with friends so they can join:</p>
+      <h2>Trip Ready!</h2>
+      <p style="font-size:0.84rem; color:#64748B; margin-top: 4px;">Share this code or direct link with your friends:</p>
 
       <div class="invite-code-display">
         <code id="display-invite-code">------</code>
       </div>
 
-      <p style="font-size:0.8rem; color:#94A3B8; margin-bottom: 18px;">
-        Friends visit <strong>upmarkcurve.com</strong>, log in, click "Join a Trip" and enter this code.
-      </p>
-
       <div class="btn-row">
         <button class="btn btn-ghost" id="btn-copy-invite">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           <span id="copy-btn-text">Copy Code</span>
         </button>
         <button class="btn btn-blue" id="btn-share-whatsapp">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          <span>Share WhatsApp</span>
+          <span>Share on WhatsApp</span>
         </button>
       </div>
 
@@ -649,12 +678,17 @@
 
   <script type="module">
     import { getUser, getMyTrips, createTrip, joinTripByCode, signOut, onAuthChange } from './src/supabase.js';
+    import { mountAucklandSkylineCanvas } from './src/ascii-bg.js';
+
+    const bannerCanvas = document.getElementById('trips-ascii-canvas');
+    if (bannerCanvas) {
+      mountAucklandSkylineCanvas(bannerCanvas);
+    }
 
     let currentUser = null;
     let currentTrips = [];
     let newlyCreatedTripId = null;
 
-    // Listen to session from email OTP or magic link
     onAuthChange(async (user) => {
       if (user && !currentUser) {
         currentUser = user;
@@ -670,14 +704,16 @@
       document.getElementById('user-name-display').textContent = name;
     }
 
-    // Auth guard
     async function init() {
+      const pendingTrip = localStorage.getItem('upmark_pending_trip');
       currentUser = await getUser();
       if (!currentUser) {
-        if (window.location.hash && window.location.hash.includes('access_token')) {
-          return; // Handled by onAuthChange
-        }
         window.location.href = './login.html';
+        return;
+      }
+      if (pendingTrip) {
+        localStorage.removeItem('upmark_pending_trip');
+        window.location.href = `./index.html?trip=${pendingTrip}`;
         return;
       }
       updateUserUI();
@@ -703,7 +739,7 @@
           <div class="empty-state">
             <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2.1-6.4z"/></svg>
             <h3>No trips yet</h3>
-            <p>Create a new trip or ask a friend for their invite code to join!</p>
+            <p>Tap <b>New Trip</b> above or join a friend's trip with their invite code or link.</p>
           </div>
         `;
         return;
@@ -713,30 +749,27 @@
         <div class="trip-card" data-id="${trip.id}">
           <div class="trip-card-left">
             <div class="trip-icon-box">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
             </div>
-            <div>
+            <div style="min-width:0;">
               <div class="trip-name">${escHtml(trip.name)}</div>
               <div class="trip-meta">
                 <span>Code:</span>
                 <span class="trip-code-pill">${escHtml(trip.invite_code || '')}</span>
-                <span>• ${escHtml(trip.currency || '₹')}</span>
+                <span>· ${escHtml(trip.currency || '₹')}</span>
               </div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
             <span class="trip-role-badge ${trip.myRole === 'admin' ? 'admin' : ''}">${trip.myRole === 'admin' ? 'Admin' : 'Member'}</span>
-            <span class="arrow-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
       `).join('');
 
       container.querySelectorAll('.trip-card').forEach(card => {
         card.addEventListener('click', () => {
-          const tripId = card.dataset.id;
-          window.location.href = `./index.html?trip=${tripId}`;
+          window.location.href = `./index.html?trip=${card.dataset.id}`;
         });
       });
     }
@@ -745,60 +778,50 @@
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // LOGOUT
     document.getElementById('btn-logout').addEventListener('click', async () => {
       await signOut();
       window.location.href = './login.html';
     });
 
-    // OPEN / CLOSE MODALS (using both .open and .active for full CSS compatibility)
     function openModal(id) {
       const modal = document.getElementById(id);
       if (!modal) return;
-      modal.classList.add('open');
-      modal.classList.add('active');
+      modal.classList.add('open', 'active');
     }
 
     function closeModal(id) {
       const modal = document.getElementById(id);
       if (!modal) return;
-      modal.classList.remove('open');
-      modal.classList.remove('active');
+      modal.classList.remove('open', 'active');
     }
 
-    // Close when clicking directly on overlay background
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          closeModal(overlay.id);
-        }
+        if (e.target === overlay) closeModal(overlay.id);
       });
     });
 
-    // Prevent clicks inside the modal card from closing it
     document.querySelectorAll('.modal-box').forEach(box => {
-      box.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
+      box.addEventListener('click', (e) => e.stopPropagation());
     });
 
-    document.getElementById('btn-new-trip').addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('btn-new-trip').addEventListener('click', () => {
       openModal('modal-new-trip');
       setTimeout(() => document.getElementById('new-trip-name')?.focus(), 50);
     });
     document.getElementById('btn-cancel-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
     document.getElementById('btn-close-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
 
-    document.getElementById('btn-join-trip').addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('btn-join-trip').addEventListener('click', () => {
+      document.getElementById('join-claim-container').style.display = 'none';
+      document.getElementById('join-trip-alert').style.display = 'none';
       openModal('modal-join-trip');
       setTimeout(() => document.getElementById('join-invite-code')?.focus(), 50);
     });
     document.getElementById('btn-cancel-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
     document.getElementById('btn-close-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
 
-    // CREATE TRIP
+    // Create Trip
     document.getElementById('form-new-trip').addEventListener('submit', async (e) => {
       e.preventDefault();
       const alertEl = document.getElementById('new-trip-alert');
@@ -828,7 +851,7 @@
       }
     });
 
-    // JOIN TRIP
+    // Join Trip (Code OR Shared Link)
     document.getElementById('form-join-trip').addEventListener('submit', async (e) => {
       e.preventDefault();
       const alertEl = document.getElementById('join-trip-alert');
@@ -837,40 +860,38 @@
       btn.disabled = true;
       btn.innerHTML = `<span class="spinner"></span> Joining...`;
       try {
-        const code = document.getElementById('join-invite-code').value.trim().toUpperCase();
+        const rawInput = document.getElementById('join-invite-code').value.trim();
         const name = currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'Traveler';
-        const res = await joinTripByCode(code, name);
+        const res = await joinTripByCode(rawInput, name);
 
-        // If trip has unlinked placeholder friends, let the user pick who they are
         if (res.needsClaimChoice && res.placeholders && res.placeholders.length > 0) {
           const claimBox = document.getElementById('join-claim-container');
           const btnsContainer = document.getElementById('join-claim-buttons');
           claimBox.style.display = 'block';
           btnsContainer.innerHTML = res.placeholders.map(p => `
-            <button type="button" class="btn btn-secondary btn-claim-name" data-id="${p.id}" data-name="${escHtml(p.display_name)}" style="padding: 6px 14px; font-weight: 700;">
+            <button type="button" class="btn btn-blue btn-claim-name" data-id="${p.id}" data-name="${escHtml(p.display_name)}" style="padding: 8px 14px; font-size:0.82rem; flex:unset;">
               I am ${escHtml(p.display_name)}
             </button>
           `).join('') + `
-            <button type="button" class="btn btn-ghost btn-claim-new" style="padding: 6px 14px; font-weight: 600;">
-              + None of these (New Friend)
+            <button type="button" class="btn btn-ghost btn-claim-new" style="padding: 8px 14px; font-size:0.82rem; flex:unset;">
+              + Join as ${escHtml(name)}
             </button>
           `;
 
-          // Bind claim buttons
           btnsContainer.querySelectorAll('.btn-claim-name').forEach(b => {
             b.addEventListener('click', async () => {
               const claimId = b.dataset.id;
               const claimedName = b.dataset.name;
               b.disabled = true;
               b.textContent = 'Linking...';
-              await joinTripByCode(code, claimedName, claimId);
+              await joinTripByCode(rawInput, claimedName, claimId);
               closeModal('modal-join-trip');
               window.location.href = `./index.html?trip=${res.trip.id}`;
             });
           });
 
           btnsContainer.querySelector('.btn-claim-new').addEventListener('click', async () => {
-            await joinTripByCode(code, name, null);
+            await joinTripByCode(rawInput, name, 'NEW');
             closeModal('modal-join-trip');
             window.location.href = `./index.html?trip=${res.trip.id}`;
           });
@@ -882,10 +903,9 @@
 
         closeModal('modal-join-trip');
         window.location.href = `./index.html?trip=${res.trip.id}`;
-        document.getElementById('form-join-trip').reset();
       } catch (err) {
         alertEl.className = 'alert alert-error';
-        alertEl.textContent = err.message || 'Failed to join trip. Please check code.';
+        alertEl.textContent = err.message || 'Could not join trip. Check the invite code or link.';
         alertEl.style.display = 'block';
       } finally {
         btn.disabled = false;
@@ -893,7 +913,6 @@
       }
     });
 
-    // INVITE CODE ACTIONS
     document.getElementById('btn-copy-invite').addEventListener('click', () => {
       const code = document.getElementById('display-invite-code').textContent;
       navigator.clipboard.writeText(code).then(() => {
@@ -905,7 +924,10 @@
 
     document.getElementById('btn-share-whatsapp').addEventListener('click', () => {
       const code = document.getElementById('display-invite-code').textContent;
-      const msg = `Join our trip on Upmark Curve (The Trip Hisab)!\n1. Open https://upmarkcurve.com\n2. Log in with OTP or password\n3. Click "Join a Trip" and enter code: *${code}*\n\nLet's track expenses together!`;
+      const shareUrl = newlyCreatedTripId
+        ? `${window.location.origin}/index.html?trip=${newlyCreatedTripId}`
+        : `https://upmarkcurve.com`;
+      const msg = `Join our trip on Upmark Curve (The Trip Hisab)!\n\nDirect Link: ${shareUrl}\nInvite Code: *${code}*\n\nLet's track expenses, route stops & group chat live!`;
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
     });
 

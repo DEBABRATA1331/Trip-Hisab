@@ -3,172 +3,517 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Login & Signup | Upmark Curve (The Trip Hisab)</title>
+  <title>Sign In | Upmark Curve (The Trip Hisab)</title>
   
-  <meta name="title" content="Login | Upmark Curve (The Trip Hisab)">
-  <meta name="description" content="Sign in via email and password on Upmark Curve (The Trip Hisab) to organize group travel expenses, track vacation budgets, and split hisab automatically.">
-  <meta name="keywords" content="upmarkcurve login, the trip hisab login, travel expense account, trip budget tracker, otp login">
+  <meta name="title" content="Sign In | Upmark Curve (The Trip Hisab)">
+  <meta name="description" content="Sign in to Upmark Curve (The Trip Hisab) to organize group travel expenses, track vacation budgets, chat with friends, and split bills effortlessly.">
+  <meta name="keywords" content="upmarkcurve login, the trip hisab login, travel expense account, trip budget tracker, group split app">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://upmarkcurve.com/login.html">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { min-height: 100vh; background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
-    .auth-card { background: #fff; border-radius: 24px; padding: 36px 30px; width: 100%; max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,0.35); }
-    .auth-logo { text-align: center; margin-bottom: 22px; }
-    .auth-logo-img { width: 68px; height: 68px; border-radius: 18px; margin: 0 auto 12px; display: block; box-shadow: 0 6px 18px rgba(0,102,255,0.28); }
-    .auth-logo h1 { font-size: 1.45rem; font-weight: 800; color: #0F172A; letter-spacing: -0.3px; }
-    .auth-logo .subtitle { font-size: 0.82rem; font-weight: 700; color: #0066FF; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
-    .auth-logo p { font-size: 0.82rem; color: #64748B; margin-top: 6px; }
-    .tabs { display: flex; background: #F1F5F9; border-radius: 12px; padding: 4px; margin-bottom: 22px; }
-    .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 9px; font-size: 0.9rem; font-weight: 700; color: #64748B; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .tab-btn.active { background: #fff; color: #0066FF; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    input[type="text"], input[type="email"], input[type="password"] {
-      width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 11px;
-      font-size: 0.95rem; color: #0F172A; background: #F8FAFC; outline: none; transition: border-color 0.2s;
+    body {
+      min-height: 100dvh;
+      background: radial-gradient(circle at 20% 15%, #1E293B 0%, #090D16 65%, #050811 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 16px;
+      color: #0F172A;
     }
-    input:focus { border-color: #0066FF; background: #fff; }
-    .otp-input { font-size: 1.6rem !important; letter-spacing: 8px; font-weight: 800; text-align: center; }
-    .btn-primary { width: 100%; padding: 13px; background: #0066FF; color: #fff; border: none; border-radius: 11px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
-    .btn-primary:hover { background: #0052CC; }
-    .btn-primary:disabled { background: #93C5FD; cursor: not-allowed; }
-    .btn-secondary { width: 100%; padding: 11px; background: transparent; color: #0066FF; border: 1.5px solid #0066FF; border-radius: 11px; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
-    .btn-secondary:hover { background: #EFF6FF; }
-    .alert { padding: 12px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
-    .alert-error { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
-    .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+
+    .auth-shell {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      animation: cardRise 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes cardRise {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Auckland Skyline Mosaic Hero Banner */
+    .skyline-hero {
+      position: relative;
+      height: 158px;
+      background: #070B14;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px 24px;
+    }
+
+    .skyline-hero canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .skyline-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 11, 20, 0.15) 0%, rgba(7, 11, 20, 0.84) 100%);
+      pointer-events: none;
+    }
+
+    .skyline-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .auth-logo-img {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      box-shadow: 0 8px 22px rgba(0, 102, 255, 0.4);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      flex-shrink: 0;
+      background: #0F172A;
+    }
+
+    .auth-brand-text h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.4px;
+      line-height: 1.15;
+    }
+
+    .auth-brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #38BDF8;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 9px;
+      border-radius: 99px;
+      letter-spacing: 0.3px;
+    }
+
+    .auth-body {
+      padding: 24px 24px 26px;
+    }
+
+    /* Mode Switcher */
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #F1F5F9;
+      padding: 4px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+
+    .mode-tab-btn {
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #64748B;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .mode-tab-btn.active {
+      background: #FFFFFF;
+      color: #0066FF;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .label-hint {
+      font-weight: 600;
+      font-size: 0.72rem;
+      color: #64748B;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #0F172A;
+      background: #F8FAFC;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus {
+      border-color: #0066FF;
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3.5px rgba(0, 102, 255, 0.12);
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .btn-toggle-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #E2E8F0;
+      border: none;
+      border-radius: 7px;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .otp-input {
+      font-family: 'JetBrains Mono', monospace !important;
+      font-size: 1.65rem !important;
+      letter-spacing: 8px;
+      font-weight: 800 !important;
+      text-align: center;
+      background: #EFF6FF !important;
+      border-color: #93C5FD !important;
+      color: #0066FF !important;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13.5px 16px;
+      background: linear-gradient(135deg, #0066FF 0%, #0284C7 100%);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 13px;
+      font-family: inherit;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 6px;
+      box-shadow: 0 8px 20px rgba(0, 102, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0, 102, 255, 0.35);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.99);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 11px 14px;
+      background: #F8FAFC;
+      color: #0F172A;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      border-color: #0066FF;
+      color: #0066FF;
+      background: #EFF6FF;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .alert-error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .alert-success { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
     .alert-info { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
-    .link-action { font-size: 0.82rem; color: #0066FF; cursor: pointer; text-decoration: none; font-weight: 600; }
+
+    .link-action {
+      font-size: 0.8rem;
+      color: #0066FF;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 700;
+    }
     .link-action:hover { text-decoration: underline; }
-    .divider { text-align: center; font-size: 0.78rem; color: #94A3B8; margin: 18px 0; position: relative; }
-    .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #E2E8F0; }
-    .divider span { background: #fff; padding: 0 10px; position: relative; }
-    .domain-badge { text-align: center; margin-top: 22px; font-size: 0.76rem; color: #94A3B8; }
-    .domain-badge strong { color: #0066FF; }
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid #F1F5F9;
+      font-size: 0.76rem;
+      color: #64748B;
+    }
+    .auth-footer strong { color: #0F172A; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2.2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .auth-body { padding: 20px 18px 22px; }
+      .skyline-hero { height: 142px; padding: 16px 18px; }
+    }
   </style>
 </head>
 <body>
-  <div class="auth-card">
-    <div class="auth-logo">
-      <img src="./logo.svg" alt="Upmark Curve Logo" class="auth-logo-img">
-      <h1>Upmark Curve</h1>
-      <div class="subtitle">The Trip Hisab</div>
-      <p>Minimal Group Budget & Expense Tracker</p>
-    </div>
-
-    <!-- Alert box -->
-    <div id="auth-alert" class="alert" style="display:none;"></div>
-
-    <!-- Two Main Tabs: Log In / Sign Up -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="login" id="tab-login-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>Log In</span>
-      </button>
-      <button class="tab-btn" data-tab="signup" id="tab-signup-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-        <span>Create Account</span>
-      </button>
-    </div>
-
-    <!-- 1. LOGIN PANEL (Email + Password) -->
-    <div class="tab-panel active" id="panel-login">
-      <form id="form-login">
-        <div class="form-group">
-          <label for="login-email">Email Address</label>
-          <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
-        </div>
-        <div class="form-group">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <label for="login-password" style="margin-bottom:0;">Password</label>
-            <span class="link-action" id="forgot-link">Forgot password?</span>
+  <div class="auth-shell">
+    <!-- 21st.dev Auckland Skyline Mosaic/ASCII Canvas Header -->
+    <div class="skyline-hero">
+      <canvas id="auckland-ascii-canvas"></canvas>
+      <div class="skyline-overlay"></div>
+      <div class="skyline-content">
+        <img src="./logo.svg" alt="Upmark Curve Logo" class="auth-logo-img">
+        <div class="auth-brand-text">
+          <h1>Upmark Curve</h1>
+          <div class="auth-brand-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>The Trip Hisab · Group Expense & Route Hub</span>
           </div>
-          <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
         </div>
-        <button type="submit" class="btn-primary" id="btn-login">Log In</button>
-      </form>
-
-      <div class="divider"><span>or sign in without password</span></div>
-      <button type="button" class="btn-secondary" id="btn-toggle-otp-login">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        Send 6-Digit Login Code to Email
-      </button>
-    </div>
-
-    <!-- 2. CREATE ACCOUNT PANEL (Exact 3 Options: Name, Email, Password) -->
-    <div class="tab-panel" id="panel-signup">
-      <form id="form-signup">
-        <div class="form-group">
-          <label for="signup-name">1. Your Name</label>
-          <input type="text" id="signup-name" placeholder="e.g. Debabrata, Rohan, Priya..." required autocomplete="name">
-        </div>
-        <div class="form-group">
-          <label for="signup-email">2. Email Address</label>
-          <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email">
-        </div>
-        <div class="form-group">
-          <label for="signup-password">3. Password (min 6 characters)</label>
-          <input type="password" id="signup-password" placeholder="Create a password" required minlength="6" autocomplete="new-password">
-        </div>
-        <button type="submit" class="btn-primary" id="btn-signup">Create Account & Continue</button>
-      </form>
-    </div>
-
-    <!-- 3. OTP VERIFICATION BOX (Shows when code is sent for Signup or Login) -->
-    <div id="panel-verify-code" style="display: none;">
-      <div style="text-align:center; margin-bottom:14px;">
-        <div style="font-weight:700; color:#0F172A; font-size:1.05rem;">Enter 6-Digit Code</div>
-        <div style="font-size:0.82rem; color:#64748B; margin-top:4px;">We sent a verification code to <b id="otp-target-email">your email</b></div>
       </div>
-      <form id="form-verify-otp">
-        <div class="form-group">
-          <input type="text" id="otp-code" class="otp-input" placeholder="------" maxlength="10" inputmode="numeric" pattern="[0-9]*" required autocomplete="one-time-code">
-        </div>
-        <button type="submit" class="btn-primary" id="btn-verify-otp">Verify Code & Enter</button>
-        <div style="display:flex; justify-content:space-between; margin-top:12px;">
-          <span class="link-action" id="btn-resend-otp">Resend Code</span>
-          <span class="link-action" id="btn-cancel-otp">Back to Log In</span>
-        </div>
-      </form>
     </div>
 
-    <div class="domain-badge">Official <strong>upmarkcurve.com</strong> · Free Group Travel Tracker</div>
+    <div class="auth-body">
+      <div id="auth-alert" class="alert" style="display:none;"></div>
+
+      <!-- Main Auth Container (3 Clean Fields: Name, Email, Password) -->
+      <div id="panel-main-auth">
+        <div class="mode-tabs">
+          <button type="button" class="mode-tab-btn active" id="tab-btn-signin" data-mode="signin">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <span>Log In</span>
+          </button>
+          <button type="button" class="mode-tab-btn" id="tab-btn-signup" data-mode="signup">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            <span>First Time / Sign Up</span>
+          </button>
+        </div>
+
+        <form id="form-unified-auth">
+          <div class="form-group" id="group-auth-name">
+            <label for="auth-name">
+              <span>Your Name</span>
+              <span class="label-hint" id="name-hint-label">Shown to trip friends</span>
+            </label>
+            <input type="text" id="auth-name" placeholder="e.g. Debabrata, Rohan, Priya..." autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label for="auth-email">
+              <span>Email Address</span>
+            </label>
+            <input type="email" id="auth-email" placeholder="you@example.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label for="auth-password">
+              <span>Password</span>
+              <span class="link-action" id="btn-forgot-pass" style="font-size:0.75rem;">Forgot password?</span>
+            </label>
+            <div class="password-wrap">
+              <input type="password" id="auth-password" placeholder="Enter your password (min 6 chars)" required minlength="6" autocomplete="current-password">
+              <button type="button" class="btn-toggle-pass" id="btn-toggle-pass-vis">SHOW</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-submit-auth">
+            <span>Continue to Trips</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <button type="button" class="btn-secondary" id="btn-instant-otp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Send One-Time Email Code Instead</span>
+        </button>
+      </div>
+
+      <!-- OTP Verification Step (Saves Password after verification so user can login with Email + Password anytime) -->
+      <div id="panel-verify-otp" style="display: none;">
+        <div style="text-align:center; margin-bottom:16px;">
+          <div style="display:inline-flex; width:44px; height:44px; border-radius:12px; background:#EFF6FF; color:#0066FF; align-items:center; justify-content:center; margin-bottom:8px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div style="font-weight:800; color:#0F172A; font-size:1.1rem;">Verify Your Email Code</div>
+          <div style="font-size:0.82rem; color:#64748B; margin-top:4px;">
+            Enter the code sent to <b id="otp-target-email" style="color:#0F172A;">your email</b>.<br>
+            Once verified, your password will be saved for direct login.
+          </div>
+        </div>
+
+        <form id="form-verify-otp">
+          <div class="form-group">
+            <input type="text" id="otp-code" class="otp-input" placeholder="------" maxlength="10" inputmode="numeric" pattern="[0-9]*" required autocomplete="one-time-code">
+          </div>
+          <button type="submit" class="btn-primary" id="btn-verify-otp">Verify & Save Account</button>
+          <div style="display:flex; justify-content:space-between; margin-top:14px;">
+            <span class="link-action" id="btn-resend-otp">Resend Code</span>
+            <span class="link-action" id="btn-back-to-auth">Back to Login</span>
+          </div>
+        </form>
+      </div>
+
+      <div class="auth-footer">
+        <strong>upmarkcurve.com</strong> · Smart Group Travel & Expense Hub
+      </div>
+    </div>
   </div>
 
   <script type="module">
-    import { signIn, signUp, sendOtp, verifyOtp, getUser, resetPassword, onAuthChange } from './src/supabase.js';
+    import {
+      authenticateWithPassword,
+      sendOtp,
+      verifyOtp,
+      getUser,
+      resetPassword,
+      onAuthChange
+    } from './src/supabase.js';
+    import { mountAucklandSkylineCanvas } from './src/ascii-bg.js';
 
-    // Auto-login if user clicked link or session active
-    onAuthChange((user) => {
-      if (user) {
+    // Mount 21st.dev Auckland Skyline Mosaic/ASCII effect
+    const canvasEl = document.getElementById('auckland-ascii-canvas');
+    if (canvasEl) {
+      mountAucklandSkylineCanvas(canvasEl);
+    }
+
+    // Check if user came via a shared trip link (?trip=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tripFromQuery = urlParams.get('trip');
+    if (tripFromQuery) {
+      localStorage.setItem('upmark_pending_trip', tripFromQuery);
+    }
+
+    function redirectAfterLogin() {
+      const pendingTrip = localStorage.getItem('upmark_pending_trip');
+      if (pendingTrip) {
+        localStorage.removeItem('upmark_pending_trip');
+        window.location.href = `./index.html?trip=${pendingTrip}`;
+      } else {
         window.location.href = './trips.html';
       }
-    });
+    }
 
-    const user = await getUser();
-    if (user) { window.location.href = './trips.html'; }
+    // Auto-redirect if already signed in
+    const existingUser = await getUser();
+    if (existingUser) {
+      redirectAfterLogin();
+    }
 
-    let currentEmail = sessionStorage.getItem('upmark_auth_email') || '';
+    let isSignUpMode = false;
+    let pendingEmail = sessionStorage.getItem('upmark_auth_email') || '';
+    let pendingPassword = sessionStorage.getItem('upmark_auth_pass') || '';
+    let pendingName = sessionStorage.getItem('upmark_auth_name') || '';
 
-    // Switch Tabs
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('panel-verify-code').style.display = 'none';
-        btn.classList.add('active');
-        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-        hideAlert();
-      });
+    const tabSignIn = document.getElementById('tab-btn-signin');
+    const tabSignUp = document.getElementById('tab-btn-signup');
+    const btnSubmitAuth = document.getElementById('btn-submit-auth');
+    const nameInput = document.getElementById('auth-name');
+    const nameHint = document.getElementById('name-hint-label');
+
+    function setAuthMode(mode) {
+      isSignUpMode = (mode === 'signup');
+      tabSignIn.classList.toggle('active', !isSignUpMode);
+      tabSignUp.classList.toggle('active', isSignUpMode);
+      nameInput.required = isSignUpMode;
+      nameHint.textContent = isSignUpMode ? 'Required for new account' : 'Optional if already registered';
+      btnSubmitAuth.innerHTML = isSignUpMode
+        ? `<span>Create Account & Send OTP</span>`
+        : `<span>Log In to Trips</span>`;
+      hideAlert();
+    }
+
+    tabSignIn.addEventListener('click', () => setAuthMode('signin'));
+    tabSignUp.addEventListener('click', () => setAuthMode('signup'));
+
+    // Password visibility toggle
+    const passInput = document.getElementById('auth-password');
+    const passToggle = document.getElementById('btn-toggle-pass-vis');
+    passToggle.addEventListener('click', () => {
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        passToggle.textContent = 'HIDE';
+      } else {
+        passInput.type = 'password';
+        passToggle.textContent = 'SHOW';
+      }
     });
 
     function showAlert(msg, type = 'error') {
@@ -182,149 +527,174 @@
       document.getElementById('auth-alert').style.display = 'none';
     }
 
-    function setLoading(btnId, loading, text) {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      btn.disabled = loading;
-      btn.innerHTML = loading ? `<span class="spinner"></span>Please wait...` : text;
-    }
-
-    function showVerificationUI(email) {
-      currentEmail = email;
+    function showOtpPanel(email, password = '', name = '') {
+      pendingEmail = email;
+      pendingPassword = password;
+      pendingName = name;
       sessionStorage.setItem('upmark_auth_email', email);
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-verify-code').style.display = 'block';
+      sessionStorage.setItem('upmark_auth_pass', password);
+      sessionStorage.setItem('upmark_auth_name', name);
+
+      document.getElementById('panel-main-auth').style.display = 'none';
+      document.getElementById('panel-verify-otp').style.display = 'block';
       document.getElementById('otp-target-email').textContent = email;
       document.getElementById('otp-code').value = '';
       setTimeout(() => document.getElementById('otp-code').focus(), 80);
     }
 
-    // ─── 1. PASSWORD LOGIN ───────────────────────────────────────────────────
-    document.getElementById('form-login').addEventListener('submit', async (e) => {
+    // Unified 3-Field Form (Name, Email, Password)
+    document.getElementById('form-unified-auth').addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlert();
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
-      const password = document.getElementById('login-password').value;
-      setLoading('btn-login', true, 'Log In');
-      try {
-        await signIn(email, password);
-        window.location.href = './trips.html';
-      } catch (err) {
-        // If email not confirmed, offer OTP verification
-        if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
-          showAlert('Please confirm your email code first. Sending code now...', 'info');
-          await sendOtp(email);
-          showVerificationUI(email);
-        } else {
-          showAlert(err.message || 'Incorrect email or password. Please try again.');
-        }
-      } finally {
-        setLoading('btn-login', false, 'Log In');
+
+      const name = document.getElementById('auth-name').value.trim();
+      const email = document.getElementById('auth-email').value.trim().toLowerCase();
+      const password = document.getElementById('auth-password').value;
+
+      if (isSignUpMode && !name) {
+        showAlert('Please enter your name so your friends recognize you in the trip.');
+        return;
       }
-    });
+      if (!email) {
+        showAlert('Please enter your email address.');
+        return;
+      }
+      if (!password || password.length < 6) {
+        showAlert('Password must be at least 6 characters.');
+        return;
+      }
 
-    // ─── 2. CREATE ACCOUNT (3 Options: Name, Email, Password) ───────────────
-    document.getElementById('form-signup').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideAlert();
-      const name = document.getElementById('signup-name').value.trim();
-      const email = document.getElementById('signup-email').value.trim().toLowerCase();
-      const password = document.getElementById('signup-password').value;
+      btnSubmitAuth.disabled = true;
+      btnSubmitAuth.innerHTML = `<span class="spinner"></span><span>Please wait...</span>`;
 
-      if (!name) { showAlert('Please enter your name.'); return; }
-      if (!email) { showAlert('Please enter your email.'); return; }
-      if (!password || password.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
-
-      setLoading('btn-signup', true, 'Create Account');
       try {
-        const res = await signUp(email, password, name);
-        // If Supabase immediately returns a session (email confirmation off)
-        if (res?.session) {
-          showAlert('Account created! Logging you in...', 'success');
-          window.location.href = './trips.html';
+        const result = await authenticateWithPassword({
+          name,
+          email,
+          password,
+          isSignUp: isSignUpMode
+        });
+
+        if (result.status === 'authenticated') {
+          showAlert('Signed in! Loading your trips...', 'success');
+          redirectAfterLogin();
           return;
         }
-        // Email verification code sent
-        showAlert(`Verification code sent to ${email}! Enter the 6-digit code below.`, 'info');
-        showVerificationUI(email);
+
+        if (result.status === 'needs_otp') {
+          showAlert(result.message || `Verification code sent to ${email}!`, 'info');
+          showOtpPanel(email, password, name);
+        }
       } catch (err) {
-        showAlert(err.message || 'Failed to create account. Please check your information.');
+        showAlert(err.message || 'Could not sign in. Please check your email and password, or click "Send One-Time Email Code".');
       } finally {
-        setLoading('btn-signup', false, 'Create Account & Continue');
+        btnSubmitAuth.disabled = false;
+        btnSubmitAuth.innerHTML = isSignUpMode ? `<span>Create Account & Send OTP</span>` : `<span>Log In to Trips</span>`;
       }
     });
 
-    // ─── 3. OTP VERIFY FORM ──────────────────────────────────────────────────
+    // Instant OTP button
+    const btnInstantOtp = document.getElementById('btn-instant-otp');
+    btnInstantOtp.addEventListener('click', async () => {
+      hideAlert();
+      const name = document.getElementById('auth-name').value.trim();
+      const email = document.getElementById('auth-email').value.trim().toLowerCase();
+      const password = document.getElementById('auth-password').value;
+
+      if (!email) {
+        showAlert('Enter your email address above first, then tap this button.', 'info');
+        document.getElementById('auth-email').focus();
+        return;
+      }
+
+      btnInstantOtp.disabled = true;
+      btnInstantOtp.innerHTML = `<span class="spinner" style="border-color:rgba(0,102,255,0.3); border-top-color:#0066FF;"></span><span>Sending code...</span>`;
+      try {
+        await sendOtp(email, name);
+        showAlert(`Verification code sent to ${email}! Check your inbox (and Spam folder).`, 'info');
+        showOtpPanel(email, password, name);
+      } catch (err) {
+        showAlert(err.message || 'Could not send email code. Wait 60 seconds and try again.');
+      } finally {
+        btnInstantOtp.disabled = false;
+        btnInstantOtp.innerHTML = `<span>Send One-Time Email Code Instead</span>`;
+      }
+    });
+
+    // Verify OTP Form
     document.getElementById('form-verify-otp').addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlert();
-      const email = currentEmail || sessionStorage.getItem('upmark_auth_email');
-      const code = document.getElementById('otp-code').value.trim().replace(/\s+/g, '');
+
+      const email = pendingEmail || sessionStorage.getItem('upmark_auth_email');
+      const passToSave = pendingPassword || sessionStorage.getItem('upmark_auth_pass') || '';
+      const nameToSave = pendingName || sessionStorage.getItem('upmark_auth_name') || '';
+      const code = document.getElementById('otp-code').value.trim();
+
       if (!code || code.length < 4) {
-        showAlert('Please enter the 6-digit code sent to your email.');
+        showAlert('Please enter the verification code from your email.');
         return;
       }
-      setLoading('btn-verify-otp', true, 'Verifying...');
+
+      const btnVerify = document.getElementById('btn-verify-otp');
+      btnVerify.disabled = true;
+      btnVerify.innerHTML = `<span class="spinner"></span><span>Verifying...</span>`;
+
       try {
-        await verifyOtp(email, code);
+        await verifyOtp(email, code, {
+          passwordToSet: passToSave,
+          displayNameToSet: nameToSave
+        });
         sessionStorage.removeItem('upmark_auth_email');
-        showAlert('Code verified! Entering your trips...', 'success');
-        window.location.href = './trips.html';
+        sessionStorage.removeItem('upmark_auth_pass');
+        sessionStorage.removeItem('upmark_auth_name');
+        showAlert('Verified & password saved! Entering your trips...', 'success');
+        redirectAfterLogin();
       } catch (err) {
-        showAlert(err.message || 'Invalid or expired code. Please check your inbox or resend code.');
+        showAlert(err.message || 'Invalid or expired code. Please check the latest email or tap Resend Code.');
       } finally {
-        setLoading('btn-verify-otp', false, 'Verify Code & Enter');
+        btnVerify.disabled = false;
+        btnVerify.innerHTML = `Verify & Save Account`;
       }
     });
 
     // Resend OTP
     document.getElementById('btn-resend-otp').addEventListener('click', async () => {
       hideAlert();
-      const email = currentEmail || sessionStorage.getItem('upmark_auth_email');
-      if (!email) { showAlert('Email is missing.'); return; }
-      try {
-        await sendOtp(email);
-        showAlert(`A fresh code has been sent to ${email}!`, 'success');
-      } catch (err) {
-        showAlert(err.message || 'Could not resend code.');
-      }
-    });
-
-    // Cancel OTP back to Login
-    document.getElementById('btn-cancel-otp').addEventListener('click', () => {
-      document.getElementById('tab-login-btn').click();
-    });
-
-    // Quick OTP Login option from Login tab
-    document.getElementById('btn-toggle-otp-login').addEventListener('click', async () => {
-      hideAlert();
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const email = pendingEmail || sessionStorage.getItem('upmark_auth_email');
+      const name = pendingName || sessionStorage.getItem('upmark_auth_name');
       if (!email) {
-        showAlert('Please enter your email above first, then click Send Code.', 'info');
-        document.getElementById('login-email').focus();
+        showAlert('Email address missing. Go back and enter your email.');
         return;
       }
-      setLoading('btn-toggle-otp-login', true, 'Sending Code...');
       try {
-        await sendOtp(email);
-        showAlert(`Login code sent to ${email}! Check your inbox.`, 'info');
-        showVerificationUI(email);
+        await sendOtp(email, name);
+        showAlert(`Fresh verification code sent to ${email}!`, 'success');
       } catch (err) {
-        showAlert(err.message || 'Failed to send login code.');
-      } finally {
-        setLoading('btn-toggle-otp-login', false, 'Send 6-Digit Login Code to Email');
+        showAlert(err.message || 'Please wait 60 seconds before requesting another code.');
       }
+    });
+
+    // Back to Auth
+    document.getElementById('btn-back-to-auth').addEventListener('click', () => {
+      document.getElementById('panel-verify-otp').style.display = 'none';
+      document.getElementById('panel-main-auth').style.display = 'block';
+      hideAlert();
     });
 
     // Forgot Password
-    document.getElementById('forgot-link')?.addEventListener('click', async () => {
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
-      if (!email) { showAlert('Enter your email in the box above first, then click Forgot Password.', 'info'); return; }
+    document.getElementById('btn-forgot-pass').addEventListener('click', async () => {
+      const email = document.getElementById('auth-email').value.trim().toLowerCase();
+      if (!email) {
+        showAlert('Enter your email address first, or use "Send One-Time Email Code Instead" to log in without a password.', 'info');
+        document.getElementById('auth-email').focus();
+        return;
+      }
       try {
         await resetPassword(email);
-        showAlert('Password reset link sent to your email! Check your inbox.', 'success');
+        showAlert(`Password reset link sent to ${email}! You can also sign in right now using a one-time email code.`, 'success');
       } catch (err) {
-        showAlert(err.message || 'Failed to send reset email.');
+        showAlert(err.message || 'Could not send reset email.');
       }
     });
   </script>

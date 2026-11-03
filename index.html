@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Upmark Curve (The Trip Hisab) - Smart Travel Budget & Group Expense Tracker</title>
+  <title>Upmark Curve (The Trip Hisab) - Smart Travel Budget, Chat & Route Tracker</title>
   
   <!-- Primary Meta Tags & Travel SEO -->
-  <meta name="title" content="Upmark Curve (The Trip Hisab) - Smart Travel Budget & Group Expense Tracker">
-  <meta name="description" content="Upmark Curve (The Trip Hisab) is a minimal, fast, and free travel budget tracker and group expense splitter. Track vacation costs, calculate who owes whom, manage group kitty funds, and auto-settle hisab in real-time.">
-  <meta name="keywords" content="upmarkcurve, upmark curve, the trip hisab, trip hisab, travel expense tracker, split travel bills, group expense splitter, vacation budget calculator, travel settlement app, trip cost calculator">
+  <meta name="title" content="Upmark Curve (The Trip Hisab) - Smart Travel Budget, Chat & Route Tracker">
+  <meta name="description" content="Upmark Curve (The Trip Hisab) is a fast, modern group travel expense splitter, kitty fund manager, live trip chat, and multi-destination route calculator.">
+  <meta name="keywords" content="upmarkcurve, upmark curve, the trip hisab, trip hisab, travel expense tracker, split travel bills, group expense splitter, vacation budget calculator, route time calculator">
   <meta name="author" content="Upmark Curve">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://upmarkcurve.com/">
@@ -16,26 +16,31 @@
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://upmarkcurve.com/">
-  <meta property="og:title" content="Upmark Curve (The Trip Hisab) - Travel Budget & Split Tracker">
-  <meta property="og:description" content="Minimal, real-time group travel budget calculator and expense splitter. Track common pools, settlements, and hisab seamlessly.">
+  <meta property="og:title" content="Upmark Curve (The Trip Hisab) - Group Travel & Split Hub">
+  <meta property="og:description" content="Real-time group travel budget calculator, expense splitter, live chat, and multi-destination route planner.">
   <meta property="og:image" content="https://upmarkcurve.com/logo.svg">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://upmarkcurve.com/">
   <meta property="twitter:title" content="Upmark Curve (The Trip Hisab)">
-  <meta property="twitter:description" content="Smart group expense splitter and vacation hisab tracker. Clean, fast, and 100% free with persistent cloud database.">
+  <meta property="twitter:description" content="Smart group expense splitter, live chat, and vacation route tracker.">
   <meta property="twitter:image" content="https://upmarkcurve.com/logo.svg">
+
+  <!-- Modern Gen-Z Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
 
-  <!-- Interactive Leaflet Map for Multi-Destination Routes (No API Key Required) -->
+  <!-- Interactive Leaflet Map for Multi-Destination Routes -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- Structured Schema for Google Travel/WebApps Ranking -->
+  <!-- Structured Schema -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -50,7 +55,7 @@
       "price": "0",
       "priceCurrency": "INR"
     },
-    "description": "Minimal, real-time travel budget tracker and group hisab splitter for vacations, road trips, and tours."
+    "description": "Real-time travel budget tracker, group hisab splitter, live trip chat, and multi-stop route planner."
   }
   </script>
 </head>
@@ -60,106 +65,98 @@
   <header class="app-header">
     <div class="header-container">
       <div class="header-brand">
-        <a href="./trips.html" title="Upmark Curve - My Trips" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
-          <img src="./logo.svg" alt="Upmark Curve Logo" style="width: 38px; height: 38px; border-radius: 10px; display: block; box-shadow: 0 2px 8px rgba(0,102,255,0.2);">
+        <a href="./trips.html" title="My Trips" class="header-logo-link">
+          <img src="./logo.svg" alt="Upmark Curve Logo" class="header-logo-img">
         </a>
         <div class="brand-details">
-          <div class="brand-title" id="btn-edit-trip-header" title="Click to rename trip">
-            <span id="header-trip-name">Trip 2026</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <div class="brand-title" id="btn-edit-trip-header" title="Rename trip">
+            <span id="header-trip-name">Loading Trip...</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </div>
           <div class="brand-subtitle">
-            <span style="font-weight: 700; color: #0066FF;">Upmark Curve</span> • 
-            <span id="header-members-count" style="cursor: pointer;" title="Manage friends">6 Friends</span> • 
-            <span class="sync-status-pill offline" id="header-sync-pill" title="Live Database Status">
+            <span class="brand-tag">Upmark Curve</span>
+            <span>·</span>
+            <span id="header-members-count" style="cursor: pointer; font-weight: 600;" title="Manage friends">1 Friend</span>
+            <span class="hide-xs">·</span>
+            <span class="sync-status-pill synced hide-xs" id="header-sync-pill" title="Cloud Sync Status">
               <span class="sync-dot"></span>
-              <span id="sync-status-text">Cloud Sync</span>
+              <span id="sync-status-text">Live Sync</span>
             </span>
           </div>
         </div>
       </div>
 
       <div class="header-actions">
-        <!-- Switch Trips Button -->
-        <a href="./trips.html" class="btn btn-secondary btn-sm" title="Switch to another trip">
+        <a href="./trips.html" class="btn btn-secondary btn-sm" title="All Trips">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>Trips</span>
+          <span class="hide-sm">Trips</span>
         </a>
 
-        <!-- Share Group Link shortcut button -->
-        <button class="btn btn-secondary btn-sm" id="btn-header-share-trip" title="Share trip link with friends">
+        <button class="btn btn-secondary btn-sm" id="btn-header-share-trip" title="Share trip invite">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          <span>Share</span>
+          <span class="hide-sm">Share</span>
         </button>
 
-        <!-- Manage Friends shortcut button -->
-        <button class="btn btn-secondary btn-sm" id="btn-header-manage-members" title="Add or remove friends">
+        <button class="btn btn-secondary btn-sm hide-md" id="btn-header-manage-members" title="Manage friends">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
           <span>Friends</span>
         </button>
 
-        <!-- User Session Badge with Logout -->
         <div class="user-session-badge" id="header-user-badge" style="display: none;">
-          <span class="avatar avatar-sm" id="header-user-avatar">D</span>
-          <span class="user-session-name" id="header-user-name">Debabrata</span>
+          <span class="avatar avatar-sm" id="header-user-avatar">U</span>
+          <span class="user-session-name hide-sm" id="header-user-name">Traveler</span>
           <button class="btn-logout" id="btn-header-logout" title="Log Out">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
 
-        <!-- Undo / Redo Buttons for mistakes -->
-        <div class="btn-undo-group" title="Undo / Redo (Ctrl+Z / Ctrl+Y)">
-          <button class="btn-undo" id="btn-undo" disabled title="Undo last action (Ctrl+Z)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-            <span class="btn-undo-label">Undo</span>
-          </button>
-          <button class="btn-undo" id="btn-redo" disabled title="Redo last action (Ctrl+Y)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
-          </button>
+        <div class="btn-undo-group hide-md" style="display:none;">
+          <button class="btn-undo" id="btn-undo" disabled></button>
+          <button class="btn-undo" id="btn-redo" disabled></button>
         </div>
 
-        <button class="btn btn-primary" id="btn-quick-add-header">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          <span>Add Expense</span>
+        <button class="btn btn-primary btn-sm" id="btn-quick-add-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add Bill</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
+  <!-- Desktop Navigation Tabs -->
   <nav class="nav-tabs-wrapper">
     <div class="nav-tabs" id="main-nav-tabs">
       <button class="nav-tab-btn active" data-tab="dashboard">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
         Overview
       </button>
       <button class="nav-tab-btn" data-tab="expenses">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Expenses <span class="badge-count" id="badge-expenses-count">0</span>
       </button>
       <button class="nav-tab-btn" data-tab="splits">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Split & Reports
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Splits
       </button>
       <button class="nav-tab-btn" data-tab="chat">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Trip Chat <span class="badge-count" id="badge-chat-count" style="display:none;">0</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Trip Chat <span class="badge-count" id="badge-chat-count">0</span>
       </button>
       <button class="nav-tab-btn" data-tab="route">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
         Route & Map
       </button>
       <button class="nav-tab-btn" data-tab="kitty">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
-        Group Kitty <span class="badge-count" id="badge-kitty-bal">₹0</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+        Kitty Pool <span class="badge-count" id="badge-kitty-bal">₹0</span>
       </button>
       <button class="nav-tab-btn" data-tab="notes">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Numbers & Notes <span class="badge-count" id="badge-notes-count">0</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Notes <span class="badge-count" id="badge-notes-count">0</span>
       </button>
       <button class="nav-tab-btn" data-tab="settings">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Settings & Sheets
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
       </button>
     </div>
   </nav>
@@ -169,6 +166,41 @@
 
     <!-- 1. DASHBOARD VIEW -->
     <section id="view-dashboard" class="tab-view active">
+
+      <!-- Auckland Skyline Mosaic Hero & Invite Card -->
+      <div class="trip-skyline-hero">
+        <canvas id="trip-hero-ascii"></canvas>
+        <div class="trip-skyline-overlay"></div>
+        <div class="trip-skyline-inner">
+          <div class="trip-skyline-left">
+            <div class="trip-skyline-badges">
+              <span class="skyline-pill-primary">Trip Invite Hub</span>
+              <span class="skyline-pill-private">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Private Trip · Invite Only
+              </span>
+            </div>
+            <h2 class="trip-skyline-title">Share link or code so friends can join & split live</h2>
+            <div class="trip-skyline-link-row">
+              <input type="text" id="dash-share-url-input" readonly value="https://upmarkcurve.com">
+              <button class="btn btn-sm btn-primary" id="btn-dash-copy-link">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy Link</span>
+              </button>
+              <button class="btn btn-sm btn-whatsapp" id="btn-dash-share-whatsapp">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                <span>WhatsApp</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="trip-skyline-code-box" id="btn-copy-code-box" title="Tap to copy invite code">
+            <span class="code-box-label">INVITE CODE</span>
+            <span id="dash-invite-code" class="code-box-value">------</span>
+          </div>
+        </div>
+      </div>
+
       <!-- High Level Stat Cards -->
       <div class="stat-cards-grid">
         <div class="stat-card highlight">
@@ -177,59 +209,24 @@
           <div class="stat-sub" id="dash-per-person">₹0 / person</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Group Kitty (Pool)</div>
+          <div class="stat-label">Group Kitty Pool</div>
           <div class="stat-val" id="dash-kitty-balance">₹0</div>
-          <div class="stat-sub" id="dash-kitty-status">Available cash</div>
+          <div class="stat-sub" id="dash-kitty-status">Common trip cash</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Personal Spends</div>
           <div class="stat-val" id="dash-personal-spend">₹0</div>
-          <div class="stat-sub">Tracked separately</div>
+          <div class="stat-sub">Solo items</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Expenses</div>
+          <div class="stat-label">Total Bills</div>
           <div class="stat-val" id="dash-total-count">0</div>
-          <div class="stat-sub" id="dash-active-members">6 active friends</div>
-        </div>
-      </div>
-
-      <!-- Dedicated Share Link & Invite Code Banner (Encrypted Among Friends) -->
-      <div class="share-trip-banner card" style="background: linear-gradient(135deg, rgba(0,102,255,0.06) 0%, rgba(14,165,233,0.04) 100%); border: 1.5px solid rgba(0,102,255,0.2); margin-bottom: 18px; padding: 18px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 260px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span style="font-size: 0.72rem; font-weight: 800; background: #0066FF; color: #fff; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;">Trip Invite Link</span>
-              <span style="font-size: 0.75rem; color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                256-bit Encrypted Group Channel
-              </span>
-            </div>
-            <div style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">Share with friends to monitor & split live expenses</div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              <span>Invite Link:</span>
-              <input type="text" id="dash-share-url-input" readonly style="font-family: monospace; font-size: 0.78rem; color: #0066FF; background: #fff; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-color); width: 220px;" value="https://upmarkcurve.com">
-            </div>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <div style="background: #fff; border: 1.5px dashed var(--brand-blue); border-radius: 10px; padding: 6px 14px; text-align: center;">
-              <span style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); display: block;">INVITE CODE</span>
-              <span id="dash-invite-code" style="font-size: 1.15rem; font-weight: 800; letter-spacing: 2px; color: var(--brand-blue);">------</span>
-            </div>
-            <button class="btn btn-primary btn-sm" id="btn-dash-copy-link" style="height: 38px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              <span>Copy Link</span>
-            </button>
-            <button class="btn btn-sm" id="btn-dash-share-whatsapp" style="height: 38px; background: #25D366; color: #fff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-              <span>WhatsApp</span>
-            </button>
-          </div>
+          <div class="stat-sub" id="dash-active-members">1 active friend</div>
         </div>
       </div>
 
       <!-- Quick Action Shortcuts -->
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
+      <div class="quick-actions-strip">
         <button class="btn btn-primary" id="btn-dash-add-expense">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Add Expense
@@ -240,7 +237,7 @@
         </button>
         <button class="btn btn-secondary" id="btn-dash-settle">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14"/><path d="m2 13 4 4"/></svg>
-          Record Settlement
+          Record Settle
         </button>
         <button class="btn btn-secondary" id="btn-dash-share-summary">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -248,42 +245,34 @@
         </button>
       </div>
 
-      <!-- 2-Column Desktop Grid for Overview -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
-        
-        <!-- Simplified Settlement Preview -->
+      <!-- 2-Column Grid for Overview -->
+      <div class="overview-two-col">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14"/><path d="m2 13 4 4"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.2"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14"/><path d="m2 13 4 4"/></svg>
                 Who Pays Whom
               </div>
-              <div class="card-subtitle">Minimal transfers to settle all dues</div>
+              <div class="card-subtitle">Smart minimum transfers to settle up</div>
             </div>
-            <button class="btn btn-sm btn-secondary" id="btn-open-splits-tab">View Details</button>
+            <button class="btn btn-sm btn-secondary" id="btn-open-splits-tab">Details</button>
           </div>
-          <div id="dash-settlements-list">
-            <!-- Rendered dynamically -->
-          </div>
+          <div id="dash-settlements-list"></div>
         </div>
 
-        <!-- Category Spend Breakdown -->
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-                Spending by Category
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                Category Breakdown
               </div>
-              <div class="card-subtitle">Food, travel, stay and activities</div>
+              <div class="card-subtitle">Food, travel, stay & activities</div>
             </div>
           </div>
-          <div id="dash-category-breakdown">
-            <!-- Rendered dynamically -->
-          </div>
+          <div id="dash-category-breakdown"></div>
         </div>
-
       </div>
 
       <!-- Recent Expenses Section -->
@@ -291,16 +280,14 @@
         <div class="card-header">
           <div>
             <div class="card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               Recent Transactions
             </div>
-            <div class="card-subtitle">Last entries recorded on trip</div>
+            <div class="card-subtitle">Latest expenses logged by the group</div>
           </div>
           <button class="btn btn-sm btn-secondary" id="btn-open-all-expenses">View All</button>
         </div>
-        <div id="dash-recent-expenses-list">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="dash-recent-expenses-list"></div>
       </div>
     </section>
 
@@ -308,12 +295,11 @@
     <section id="view-expenses" class="tab-view" style="display: none;">
       <div class="card" style="margin-bottom: 12px; padding: 12px;">
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-          <input type="text" id="expense-search-input" class="form-control" placeholder="Search by name, payer, or category..." style="max-width: 340px;">
-          
+          <input type="text" id="expense-search-input" class="form-control" placeholder="Search by title, payer, or category..." style="max-width: 340px;">
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button class="btn btn-sm btn-secondary filter-btn active" data-filter="all">All</button>
-            <button class="btn btn-sm btn-secondary filter-btn" data-filter="group">Group Only</button>
-            <button class="btn btn-sm btn-secondary filter-btn" data-filter="personal">Personal Only</button>
+            <button class="btn btn-sm btn-secondary filter-btn" data-filter="group">Group</button>
+            <button class="btn btn-sm btn-secondary filter-btn" data-filter="personal">Personal</button>
           </div>
         </div>
       </div>
@@ -326,9 +312,7 @@
             Add New
           </button>
         </div>
-        <div id="expenses-full-list">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="expenses-full-list"></div>
       </div>
     </section>
 
@@ -337,12 +321,12 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
         <div>
           <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">Individual Reports</h2>
-          <p style="font-size: 0.8rem; color: var(--text-secondary);">Click any friend to view their exact line-items or share report</p>
+          <p style="font-size: 0.8rem; color: var(--text-secondary);">Tap any friend to view their itemized breakdown or share on WhatsApp</p>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <button class="btn btn-sm btn-secondary" id="btn-open-manage-members">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-            Manage Friends
+            Friends
           </button>
           <button class="btn btn-sm btn-secondary" id="btn-share-all-whatsapp">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -355,41 +339,32 @@
         </div>
       </div>
 
-      <!-- Member Cards Grid -->
-      <div class="member-cards-grid" id="splits-members-grid">
-        <!-- Rendered dynamically -->
-      </div>
+      <div class="member-cards-grid" id="splits-members-grid"></div>
 
-      <!-- Settlement Matrix / Who Pays Whom -->
       <div class="card" style="margin-top: 18px;">
         <div class="card-header">
           <div>
             <div class="card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              Optimal Settlement Formula
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Optimal Settlement Plan
             </div>
-            <div class="card-subtitle">Direct payments needed to make everyone ₹0</div>
+            <div class="card-subtitle">Direct transfers needed to settle everyone's balance</div>
           </div>
         </div>
-        <div id="splits-settlements-list">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="splits-settlements-list"></div>
       </div>
 
-      <!-- Recorded Settlements History -->
       <div class="card" style="margin-top: 14px;">
         <div class="card-header">
           <div>
             <div class="card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Settlement History (Payments Made)
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Settlement History
             </div>
-            <div class="card-subtitle">Cleared transfers between friends</div>
+            <div class="card-subtitle">Recorded payments between friends</div>
           </div>
         </div>
-        <div id="splits-history-list">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="splits-history-list"></div>
       </div>
     </section>
 
@@ -398,21 +373,21 @@
       <div class="card highlight" style="border-left: 4px solid var(--brand-blue);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
           <div>
-            <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Group Kitty (Common Trip Fund)</div>
-            <div style="font-size: 2.2rem; font-weight: 800; color: #0F172A; margin: 4px 0;" id="kitty-main-balance">₹0</div>
+            <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--brand-blue); letter-spacing: 0.5px;">Group Kitty (Shared Pool)</div>
+            <div style="font-size: 2.1rem; font-weight: 800; color: #0F172A; margin: 4px 0; font-family: 'Space Grotesk', sans-serif;" id="kitty-main-balance">₹0</div>
             <div style="font-size: 0.82rem; color: var(--text-secondary);">
-              Use kitty to pay tolls, parking, shared grocery, or common activities without calculating individual shares each time.
+              Pool money together for tolls, snacks, fuel, or tickets without splitting small bills one by one.
             </div>
           </div>
 
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-primary" id="btn-kitty-add-deposit">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              Add / Deposit Money
+              Deposit Money
             </button>
             <button class="btn btn-secondary" id="btn-kitty-withdraw">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Cash Withdraw
+              Withdraw Cash
             </button>
             <button class="btn btn-secondary" id="btn-kitty-modify">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -422,17 +397,14 @@
         </div>
       </div>
 
-      <!-- Kitty Transaction Log -->
       <div class="card">
         <div class="card-header">
           <div>
             <div class="card-title">Pool Transaction Ledger</div>
-            <div class="card-subtitle">Contributions, withdrawals, and group bill deductions</div>
+            <div class="card-subtitle">Deposits, cash withdrawals, and group kitty payments</div>
           </div>
         </div>
-        <div id="kitty-history-list">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="kitty-history-list"></div>
       </div>
     </section>
 
@@ -440,87 +412,56 @@
     <section id="view-notes" class="tab-view" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
         <div>
-          <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">Important Numbers & Trip Notes</h2>
-          <p style="font-size: 0.8rem; color: var(--text-secondary);">Driver contacts, hotel bookings, flight/train PNR, and quick reminders</p>
+          <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">Numbers & Trip Notes</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary);">Driver contacts, hotel check-in details, PNRs & reminders</p>
         </div>
         <button class="btn btn-primary" id="btn-add-note">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Add Note / Number
+          Add Note
         </button>
       </div>
-
-      <div id="notes-cards-list">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="notes-cards-list"></div>
     </section>
 
-    <!-- 6. SETTINGS & GOOGLE SHEETS VIEW -->
+    <!-- 6. SETTINGS VIEW -->
     <section id="view-settings" class="tab-view" style="display: none;">
-      
-      <!-- Friends & Members Manager -->
-      <div class="card" id="card-members-settings">
+
+      <!-- Unified Travelers & Friends Manager -->
+      <div class="card" id="card-members-access-settings">
         <div class="card-header">
           <div>
             <div class="card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Trip Friends (<span id="settings-members-count-label">6</span>)
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Trip Friends (<span id="settings-members-count-badge">1</span>)
             </div>
-            <div class="card-subtitle">Add or remove names to match your travel group</div>
+            <div class="card-subtitle">Add friend names now and let them claim their name when joining via link or code</div>
           </div>
-        </div>
-
-        <div style="margin-bottom: 14px;">
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <input type="text" id="input-new-member-name" class="form-control" placeholder="Enter friend's name (e.g. Alex, Sam)..." style="max-width: 320px;">
-            <button class="btn btn-primary btn-sm" id="btn-add-member">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              Add Friend
-            </button>
-          </div>
-
-          <div id="settings-members-list" style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Google Sheets Connection Card -->
-      <div class="card highlight" style="border-color: var(--brand-blue-border);">
-        <div class="card-header">
-          <div>
-            <div class="card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-              Google Sheets Database Auto-Sync
-            </div>
-            <div class="card-subtitle">Real storage so no hisab can ever be lost</div>
-          </div>
-          <span class="sync-status-pill offline" id="settings-sync-badge">
-            <span class="sync-dot"></span>
-            <span id="settings-sync-text">Not Connected</span>
-          </span>
-        </div>
-
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
-          Connect your Google Sheet so all friends can view the live spreadsheet while you use this smooth mobile app to enter expenses.
-        </p>
-
-        <div class="form-group">
-          <label class="form-label">Google Apps Script Web App URL</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="url" id="input-google-sheet-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
-            <button class="btn btn-primary" id="btn-save-sheet-url">Save & Connect</button>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-          <button class="btn btn-secondary btn-sm" id="btn-manual-sync-now">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            Sync to Sheet Now
+          <button class="btn btn-sm btn-primary" id="btn-settings-share-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share Invite
           </button>
-          <button class="btn btn-secondary btn-sm" id="btn-view-apps-script-guide">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Apps Script Code & Guide
-          </button>
+        </div>
+
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+          <div style="font-size: 0.83rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Add Friend to Trip:</div>
+          <div style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 10px;">
+            You can add friends right away to split bills with them. When they open your invite link, they automatically link to their name without duplicate entries.
+          </div>
+          <form id="form-settings-add-placeholder" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <input type="text" id="input-settings-friend-name" class="form-control" placeholder="Enter friend's name (e.g. Rohan, Priya)..." required style="flex: 1; min-width: 180px; height: 40px;">
+            <button type="submit" class="btn btn-primary" style="height: 40px; padding: 0 16px;">Add Friend</button>
+          </form>
+        </div>
+
+        <div id="settings-travelers-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+
+        <div style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; align-items: center; gap: 10px;">
+          <div style="width: 30px; height: 30px; border-radius: 8px; background: #EFF6FF; color: #0066FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">
+            <strong style="color: var(--text-primary);">Private Group Access:</strong> Only members with your trip's invite link or code can view or add expenses.
+          </div>
         </div>
       </div>
 
@@ -528,15 +469,14 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Trip Information</div>
-            <div class="card-subtitle">Change trip title or currency symbol</div>
+            <div class="card-title">Trip Details</div>
+            <div class="card-subtitle">Update trip name or currency symbol</div>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Trip Name</label>
-            <input type="text" id="input-trip-name" class="form-control" value="Trip 2026">
+            <input type="text" id="input-trip-name" class="form-control" value="">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Currency Symbol</label>
@@ -552,45 +492,33 @@
         </div>
       </div>
 
-      <!-- Trip Access & Member Management -->
-      <div class="card" id="card-members-access-settings">
+      <!-- Optional Google Sheets Sync Card -->
+      <div class="card highlight" style="border-color: var(--brand-blue-border);">
         <div class="card-header">
           <div>
-            <div class="card-title">Travelers & Access Control</div>
-            <div class="card-subtitle">Manage group members and assign placeholder names to avoid dual entries</div>
-          </div>
-          <button class="btn btn-sm btn-primary" id="btn-settings-share-link">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            Share Invite Link
-          </button>
-        </div>
-
-        <!-- Add Planned Friend (Avoids Dual Entry) -->
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
-          <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Add Planned Friend (Before They Join):</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px;">Pre-add friend names so you can assign expenses immediately. When they join via the trip link or code, they can claim their name seamlessly without creating a dual entry!</div>
-          <form id="form-settings-add-placeholder" style="display: flex; gap: 8px;">
-            <input type="text" id="input-settings-friend-name" class="form-control" placeholder="e.g. Rohan, Priya..." required style="height: 40px;">
-            <button type="submit" class="btn btn-primary" style="white-space: nowrap; height: 40px; padding: 0 16px;">Add Friend</button>
-          </form>
-        </div>
-
-        <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">Group Travelers (<span id="settings-members-count-badge">0</span>):</div>
-        <div id="settings-travelers-list" style="display: flex; flex-direction: column; gap: 8px;">
-          <!-- Rendered dynamically -->
-        </div>
-
-        <!-- 256-bit Encryption & Row-Level Privacy Notice -->
-        <div style="margin-top: 18px; border-top: 1px solid var(--border-color); padding-top: 14px; display: flex; align-items: flex-start; gap: 10px;">
-          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(5,150,105,0.1); color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <div>
-            <div style="font-size: 0.82rem; font-weight: 800; color: #059669;">256-bit Encrypted Group Privacy Active</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin-top: 2px;">
-              Only authenticated travelers with this trip's invite code or link can view or alter expenses. Protected by Supabase PostgreSQL Row Level Security (RLS).
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+              Google Sheets Live Mirror (Optional)
             </div>
+            <div class="card-subtitle">Mirror your cloud trip data to a Google Sheet</div>
           </div>
+          <span class="sync-status-pill synced" id="settings-sync-badge">
+            <span class="sync-dot"></span>
+            <span id="settings-sync-text">Cloud Active</span>
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Google Apps Script Web App URL</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <input type="url" id="input-google-sheet-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" style="flex: 1; min-width: 200px;">
+            <button class="btn btn-primary" id="btn-save-sheet-url">Save URL</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-sm" id="btn-manual-sync-now">Push to Sheet Now</button>
+          <button class="btn btn-secondary btn-sm" id="btn-view-apps-script-guide">Apps Script Setup Guide</button>
         </div>
       </div>
 
@@ -598,101 +526,114 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Backup & Export</div>
-            <div class="card-subtitle">Instant offline backup files and Excel CSV export</div>
+            <div class="card-title">Export Reports & Backup</div>
+            <div class="card-subtitle">Download Excel CSV report or JSON snapshot</div>
           </div>
         </div>
-
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-secondary" id="btn-export-csv">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-            Export to CSV / Excel
-          </button>
-          <button class="btn btn-secondary" id="btn-download-backup">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download JSON Backup
-          </button>
-          <label class="btn btn-secondary" style="cursor: pointer;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Restore Backup File
-            <input type="file" id="input-restore-backup" accept=".json" style="display: none;">
+          <button class="btn btn-secondary" id="btn-export-csv">Export CSV / Excel</button>
+          <button class="btn btn-secondary" id="btn-download-backup">Download JSON Backup</button>
+          <label class="btn btn-secondary" style="display: none;">
+            <input type="file" id="input-restore-backup" accept=".json">
           </label>
         </div>
       </div>
     </section>
 
     <!-- 7. TRIP LIVE CHAT VIEW -->
-    <section id="view-chat" class="tab-view">
+    <section id="view-chat" class="tab-view" style="display: none;">
       <div class="card chat-card-container">
-        <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+        <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 8px;">
           <div>
             <div class="card-title" style="display: flex; align-items: center; gap: 8px;">
-              <span>Trip Chat</span>
-              <span class="badge-role" style="background: rgba(16,185,129,0.12); color: #059669; font-size: 0.72rem; padding: 2px 8px; border-radius: 99px; font-weight: 700;">Realtime Live</span>
+              <span>Group Trip Chat</span>
+              <span class="badge-live-chat">Live Sync</span>
             </div>
-            <div class="card-subtitle">Chat with your trip friends, share updates & discuss hisab</div>
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>Encrypted Room</span>
+            <div class="card-subtitle">Coordinate plans, share updates & discuss bills with your group</div>
           </div>
         </div>
 
-        <!-- Messages scroll container -->
         <div id="chat-messages-box" class="chat-messages-box">
           <div class="chat-empty-state" id="chat-empty-state">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <p>No messages yet. Say hi to your trip friends!</p>
+            <p>No messages yet. Say hi to your trip group!</p>
           </div>
         </div>
 
-        <!-- Chat input form -->
         <form id="form-chat-send" class="chat-input-bar">
-          <input type="text" id="input-chat-message" class="form-control" placeholder="Type a message or note to group..." required autocomplete="off" style="height: 44px;">
-          <button type="submit" class="btn btn-primary" id="btn-chat-send" style="height: 44px; padding: 0 18px; border-radius: 10px;">
+          <input type="text" id="input-chat-message" class="form-control" placeholder="Write a message to the group..." required autocomplete="off">
+          <button type="submit" class="btn btn-primary" id="btn-chat-send">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span class="hide-xs">Send</span>
           </button>
         </form>
       </div>
     </section>
 
     <!-- 8. ROUTE & MULTI-DESTINATION VIEW -->
-    <section id="view-route" class="tab-view">
+    <section id="view-route" class="tab-view" style="display: none;">
       <div class="card" style="margin-bottom: 16px;">
-        <div class="card-header" style="align-items: center;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
           <div>
-            <div class="card-title">Interactive Multi-Destination Route</div>
-            <div class="card-subtitle">Connect destinations, calculate route distance & travel duration</div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+              Multi-Destination Route & Time Calculator
+            </div>
+            <div class="card-subtitle">Search any destination or tap on the map to connect stops & calculate travel time</div>
           </div>
-          <button class="btn btn-primary btn-sm" id="btn-open-add-stop">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Stop
-          </button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" id="btn-open-google-maps-route" title="Open full route in Google Maps">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Google Maps</span>
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-open-add-stop">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Add Stop</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Leaflet Map Container -->
-        <div id="route-map" style="height: 330px; width: 100%; border-radius: 14px; z-index: 1; border: 1px solid var(--border-color); margin-bottom: 16px; background: #E2E8F0;"></div>
+        <!-- Inline Quick Destination Search Bar -->
+        <div class="route-quick-search-bar">
+          <div class="route-search-input-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="inline-route-search-input" placeholder="Search any city, beach, hotel, or landmark to add stop..." autocomplete="off">
+            <button type="button" class="btn btn-sm btn-primary" id="btn-inline-route-search">Search</button>
+          </div>
+          <div id="inline-route-search-results" class="route-search-results" style="display: none;"></div>
+        </div>
 
-        <!-- Travel Mode & Speed Controls -->
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--bg-surface); padding: 12px 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
-          <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">Travel Speed Mode:</div>
-          <select id="route-transit-speed" class="form-control" style="width: auto; height: 36px; font-size: 0.85rem; padding: 4px 10px;">
-            <option value="60" selected>Car / Road Trip (~60 km/h)</option>
-            <option value="80">Expressway (~80 km/h)</option>
-            <option value="45">Bus / Hill Route (~45 km/h)</option>
-            <option value="70">Train (~70 km/h)</option>
-            <option value="550">Flight (~550 km/h)</option>
-            <option value="5">Trek / Walking (~5 km/h)</option>
-          </select>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-left: auto;">
-            Auto-calculates distance & travel time between sequential waypoints.
+        <!-- Interactive Leaflet Map -->
+        <div id="route-map" class="route-map-box"></div>
+
+        <!-- Travel Mode & Departure Time Controls -->
+        <div class="route-controls-bar">
+          <div class="route-control-item">
+            <label for="route-transit-speed">Travel Mode:</label>
+            <select id="route-transit-speed" class="form-control">
+              <option value="60" selected>Car / Road Trip (~60 km/h)</option>
+              <option value="80">Expressway (~80 km/h)</option>
+              <option value="45">Mountain / Hill Drive (~45 km/h)</option>
+              <option value="70">Train (~70 km/h)</option>
+              <option value="550">Flight (~550 km/h)</option>
+              <option value="5">Trek / Walking (~5 km/h)</option>
+            </select>
+          </div>
+
+          <div class="route-control-item">
+            <label for="route-departure-time">Start Time (ETA):</label>
+            <input type="time" id="route-departure-time" class="form-control" value="08:00">
+          </div>
+
+          <div class="route-control-hint">
+            Tip: Tap anywhere on the map to drop a stop!
           </div>
         </div>
 
         <!-- Summary Totals Card -->
-        <div class="stat-cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom: 18px;">
+        <div class="stat-cards-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 18px;">
           <div class="stat-card">
-            <div class="stat-label">Total Destinations</div>
+            <div class="stat-label">Stops</div>
             <div class="stat-val" id="route-total-stops">0</div>
           </div>
           <div class="stat-card">
@@ -700,39 +641,39 @@
             <div class="stat-val" id="route-total-distance">0 km</div>
           </div>
           <div class="stat-card highlight">
-            <div class="stat-label">Estimated Travel Time</div>
-            <div class="stat-val" id="route-total-time">0 hrs</div>
+            <div class="stat-label">Est. Travel Time</div>
+            <div class="stat-val" id="route-total-time">0 mins</div>
           </div>
         </div>
 
-        <!-- Destination Stops Timeline -->
-        <div style="font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">Itinerary Waypoints:</div>
-        <div id="route-stops-timeline" class="route-timeline">
-          <!-- Rendered dynamically -->
+        <div style="font-size: 0.88rem; font-weight: 800; margin-bottom: 10px; color: var(--text-primary); display:flex; justify-content:space-between; align-items:center;">
+          <span>Connected Itinerary & ETA Timeline</span>
+          <span id="route-final-eta-badge" style="font-size:0.76rem; color:#0066FF; font-weight:700;"></span>
         </div>
+        <div id="route-stops-timeline" class="route-timeline"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- Floating Add Button for Mobile -->
+  <!-- Floating Add Button -->
   <button class="fab-add" id="fab-add-expense" title="Add Expense">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
   </button>
 
   <!-- Mobile Bottom Navigation -->
-  <nav class="mobile-bottom-nav" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+  <nav class="mobile-bottom-nav">
     <button class="mobile-nav-item active" data-tab="dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-      <span>Overview</span>
+      <span>Home</span>
     </button>
     <button class="mobile-nav-item" data-tab="expenses">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      <span>Expenses</span>
+      <span>Bills</span>
     </button>
     <button class="mobile-nav-item" data-tab="splits">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>Split</span>
+      <span>Splits</span>
     </button>
     <button class="mobile-nav-item" data-tab="chat">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -740,19 +681,15 @@
     </button>
     <button class="mobile-nav-item" data-tab="route">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-      <span>Route</span>
+      <span>Map</span>
     </button>
     <button class="mobile-nav-item" data-tab="kitty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
       <span>Kitty</span>
     </button>
-    <button class="mobile-nav-item" data-tab="notes">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      <span>Notes</span>
-    </button>
     <button class="mobile-nav-item" data-tab="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span>Settings</span>
+      <span>Setup</span>
     </button>
   </nav>
 
@@ -769,23 +706,19 @@
         <form id="form-expense">
           <input type="hidden" id="input-expense-id" value="">
 
-          <!-- Type Toggle: Group vs Personal Expense -->
           <div class="type-toggle-group">
             <button type="button" class="type-toggle-btn active" id="btn-toggle-group-exp" data-type="group">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-              Group Expense (Split)
+              Group Split
             </button>
             <button type="button" class="type-toggle-btn" id="btn-toggle-personal-exp" data-type="personal">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              Personal Expense (Solo)
+              Personal (Solo)
             </button>
           </div>
 
-          <!-- Amount & Category -->
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Amount (<span class="currency-label">₹</span>)</label>
-              <input type="number" step="any" id="input-exp-amount" class="form-control" placeholder="0.00" required autofocus style="font-size: 1.25rem; font-weight: 700;">
+              <input type="number" step="any" id="input-exp-amount" class="form-control" placeholder="0.00" required style="font-size: 1.2rem; font-weight: 800;">
             </div>
             <div class="form-group">
               <label class="form-label">Category</label>
@@ -793,7 +726,7 @@
                 <option value="Food">Food & Drinks</option>
                 <option value="Travel">Travel & Fuel</option>
                 <option value="Stay">Hotel & Stay</option>
-                <option value="Activities">Activities & Sightseeing</option>
+                <option value="Activities">Activities & Entry</option>
                 <option value="Shopping">Shopping</option>
                 <option value="Misc">Miscellaneous</option>
               </select>
@@ -802,33 +735,25 @@
 
           <div class="form-group">
             <label class="form-label">Description / Title</label>
-            <input type="text" id="input-exp-title" class="form-control" placeholder="e.g. Dinner, Fuel, Toll, Tickets..." required>
+            <input type="text" id="input-exp-title" class="form-control" placeholder="e.g. Dinner, Cab, Hotel, Tickets..." required>
           </div>
 
-          <!-- Who Paid -->
           <div class="form-group">
             <label class="form-label" id="label-who-paid">Paid By</label>
-            <select id="select-exp-payer" class="form-control">
-              <!-- Dynamically populated -->
-            </select>
+            <select id="select-exp-payer" class="form-control"></select>
           </div>
 
-          <!-- Split Selector (Only shown for Group Expenses) -->
           <div class="form-group" id="group-split-section">
             <div class="split-selector-box">
               <div class="split-header-row">
-                <span><b>Split Between:</b> <span id="split-selected-count">6</span> selected</span>
-                <div>
-                  <button type="button" class="btn btn-sm btn-secondary" id="btn-split-select-all" style="padding: 2px 6px; font-size: 0.72rem;">All</button>
-                  <button type="button" class="btn btn-sm btn-secondary" id="btn-split-clear-all" style="padding: 2px 6px; font-size: 0.72rem;">Clear</button>
+                <span><b>Split Between:</b> <span id="split-selected-count">1</span> selected</span>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-split-select-all" style="padding: 2px 8px; font-size: 0.72rem;">All</button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-split-clear-all" style="padding: 2px 8px; font-size: 0.72rem;">Clear</button>
                 </div>
               </div>
-
-              <div class="split-members-list" id="split-members-checkboxes">
-                <!-- Checkboxes for members -->
-              </div>
-
-              <div style="margin-top: 10px; font-size: 0.8rem; color: var(--brand-blue); font-weight: 600; text-align: right;" id="split-per-person-preview">
+              <div class="split-members-list" id="split-members-checkboxes"></div>
+              <div style="margin-top: 10px; font-size: 0.8rem; color: var(--brand-blue); font-weight: 700; text-align: right;" id="split-per-person-preview">
                 Per person: ₹0
               </div>
             </div>
@@ -841,7 +766,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Notes (Optional)</label>
-              <input type="text" id="input-exp-notes" class="form-control" placeholder="Bill number, details...">
+              <input type="text" id="input-exp-notes" class="form-control" placeholder="Optional details...">
             </div>
           </div>
         </form>
@@ -860,20 +785,15 @@
         <div class="modal-title" id="modal-member-title">Member Report</div>
         <button class="modal-close-btn" data-close-modal="modal-member-detail">&times;</button>
       </div>
-      <div class="modal-body" id="modal-member-body">
-        <!-- Rendered dynamically -->
-      </div>
+      <div class="modal-body" id="modal-member-body"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-close-modal="modal-member-detail">Close</button>
-        <button type="button" class="btn btn-primary" id="btn-share-member-whatsapp">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Share WhatsApp Report
-        </button>
+        <button type="button" class="btn btn-primary" id="btn-share-member-whatsapp">Share on WhatsApp</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. Kitty Deposit / Withdraw / Modify Modal -->
+  <!-- 3. Kitty Action Modal -->
   <div class="modal-overlay" id="modal-kitty-action">
     <div class="modal-container">
       <div class="modal-header">
@@ -890,21 +810,19 @@
             <select id="select-kitty-type" class="form-control">
               <option value="DEPOSIT">Deposit (+ Money into Kitty)</option>
               <option value="WITHDRAW">Withdraw (- Cash from Kitty)</option>
-              <option value="ADJUST">Adjust Balance (Direct Override)</option>
+              <option value="ADJUST">Adjust Balance</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label" id="label-kitty-amount">Amount (<span class="currency-label">₹</span>)</label>
-            <input type="number" step="any" id="input-kitty-amount" class="form-control" placeholder="0.00" required autofocus style="font-size: 1.25rem; font-weight: 700;">
+            <input type="number" step="any" id="input-kitty-amount" class="form-control" placeholder="0.00" required style="font-size: 1.25rem; font-weight: 800;">
             <div id="hint-kitty-amount" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;"></div>
           </div>
 
           <div class="form-group" id="group-kitty-member">
             <label class="form-label" id="label-kitty-member">Contributed By / Handed To</label>
-            <select id="select-kitty-member" class="form-control">
-              <!-- Dynamically populated -->
-            </select>
+            <select id="select-kitty-member" class="form-control"></select>
           </div>
 
           <div class="form-group">
@@ -913,8 +831,8 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Reason / Note</label>
-            <input type="text" id="input-kitty-note" class="form-control" placeholder="e.g. Initial trip contribution, toll cash...">
+            <label class="form-label">Note</label>
+            <input type="text" id="input-kitty-note" class="form-control" placeholder="e.g. Initial pool collection, toll cash...">
           </div>
         </form>
       </div>
@@ -936,23 +854,21 @@
         <form id="form-settlement">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Who Paid (Debtor)</label>
+              <label class="form-label">Paid By</label>
               <select id="select-settle-from" class="form-control"></select>
             </div>
             <div class="form-group">
-              <label class="form-label">Who Received (Creditor)</label>
+              <label class="form-label">Paid To</label>
               <select id="select-settle-to" class="form-control"></select>
             </div>
           </div>
-
           <div class="form-group">
-            <label class="form-label">Settled Amount (<span class="currency-label">₹</span>)</label>
-            <input type="number" step="any" id="input-settle-amount" class="form-control" placeholder="0.00" required style="font-size: 1.2rem; font-weight: 700;">
+            <label class="form-label">Amount (<span class="currency-label">₹</span>)</label>
+            <input type="number" step="any" id="input-settle-amount" class="form-control" placeholder="0.00" required style="font-size: 1.2rem; font-weight: 800;">
           </div>
-
           <div class="form-group">
             <label class="form-label">Note / Reference</label>
-            <input type="text" id="input-settle-note" class="form-control" placeholder="e.g. UPI / Cash handover">
+            <input type="text" id="input-settle-note" class="form-control" placeholder="e.g. Paid via UPI / GPay">
           </div>
         </form>
       </div>
@@ -973,24 +889,21 @@
       <div class="modal-body">
         <form id="form-note">
           <input type="hidden" id="input-note-id" value="">
-          
           <div class="form-group">
             <label class="form-label">Type</label>
             <select id="select-note-type" class="form-control">
               <option value="contact">Phone Number / Contact</option>
-              <option value="booking">Hotel / Flight / Booking ID</option>
+              <option value="booking">Hotel / Flight / PNR</option>
               <option value="note">Trip Note / Checklist</option>
             </select>
           </div>
-
           <div class="form-group">
-            <label class="form-label">Title / Label</label>
-            <input type="text" id="input-note-title" class="form-control" placeholder="e.g. Driver contact, Hotel Reception..." required>
+            <label class="form-label">Title</label>
+            <input type="text" id="input-note-title" class="form-control" placeholder="e.g. Cab Driver, Hotel Check-in..." required>
           </div>
-
           <div class="form-group">
-            <label class="form-label">Details / Phone Number / Content</label>
-            <textarea id="input-note-content" class="form-control" rows="3" placeholder="Enter phone number, address, confirmation code..." required></textarea>
+            <label class="form-label">Details / Number</label>
+            <textarea id="input-note-content" class="form-control" rows="3" placeholder="Phone number, booking reference, notes..." required></textarea>
           </div>
         </form>
       </div>
@@ -1001,85 +914,72 @@
     </div>
   </div>
 
-  <!-- 6. Google Apps Script Guide & Code Copy Modal -->
+  <!-- 6. Google Apps Script Guide Modal -->
   <div class="modal-overlay" id="modal-apps-script-guide">
-    <div class="modal-container" style="max-width: 680px;">
+    <div class="modal-container" style="max-width: 640px;">
       <div class="modal-header">
-        <div class="modal-title">Google Sheet Connection Guide</div>
+        <div class="modal-title">Google Sheet Mirror Guide</div>
         <button class="modal-close-btn" data-close-modal="modal-apps-script-guide">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px;">
-          Follow these 3 quick steps to link your Google Sheet. It will automatically format tabs for <b>Overview, Group Expenses, Personal Expenses, Kitty Pool, and Settlements</b>!
-        </p>
-        
-        <ol style="font-size: 0.85rem; color: var(--text-primary); margin-left: 20px; margin-bottom: 16px; line-height: 1.6;">
-          <li>Create a blank spreadsheet at <a href="https://sheets.new" target="_blank" style="color: var(--brand-blue); font-weight: 600;">sheets.new</a>.</li>
-          <li>Click <b>Extensions &rarr; Apps Script</b> in top menu.</li>
-          <li>Delete any existing lines in <code>Code.gs</code>, paste the code below, and click Save.</li>
-          <li>Click the blue <b>Deploy &rarr; New deployment</b> button. Choose <b>Web app</b>. Set Execute as: <b>Me</b>, Who has access: <b>Anyone</b>. Click Deploy and copy the Web App URL!</li>
+        <ol style="font-size: 0.84rem; color: var(--text-primary); margin-left: 18px; margin-bottom: 14px; line-height: 1.6;">
+          <li>Open a blank Google Sheet at <a href="https://sheets.new" target="_blank" style="color: var(--brand-blue); font-weight: 700;">sheets.new</a>.</li>
+          <li>Click <b>Extensions &rarr; Apps Script</b>, paste the script below, and save.</li>
+          <li>Click <b>Deploy &rarr; New deployment &rarr; Web app</b> (Execute as: <b>Me</b>, Access: <b>Anyone</b>) and paste the Web App URL into Settings.</li>
         </ol>
-
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <label class="form-label" style="margin: 0;">Code.gs Script:</label>
-          <button class="btn btn-sm btn-secondary" id="btn-copy-apps-script">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy Script
-          </button>
+          <button class="btn btn-sm btn-secondary" id="btn-copy-apps-script">Copy Script</button>
         </div>
-        <textarea id="code-apps-script-box" class="form-control" rows="10" readonly style="font-family: monospace; font-size: 0.78rem; background: #F8FAFC;"></textarea>
+        <textarea id="code-apps-script-box" class="form-control" rows="8" readonly style="font-family: monospace; font-size: 0.76rem; background: #F8FAFC;"></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-apps-script-guide">Done</button>
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-apps-script-guide">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- 7. Share Trip with Group Modal -->
+  <!-- 7. Share Trip Modal -->
   <div class="modal-overlay" id="modal-share-trip">
     <div class="modal-container">
       <div class="modal-header">
-        <div class="modal-title">Share Trip with Group</div>
+        <div class="modal-title">Invite Friends to Trip</div>
         <button class="modal-close-btn" data-close-modal="modal-share-trip">&times;</button>
       </div>
       <div class="modal-body">
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
-          Share this link with your trip group. When friends open the link on their mobile or PC, they select their name, enter the passcode, and monitor all trip expenses together!
+          Share this direct link or 6-character code with your group. Friends can join with one click and link to their name!
         </p>
 
         <div class="form-group">
-          <label class="form-label">Trip Link</label>
+          <label class="form-label">Direct Trip Link</label>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-share-link" class="form-control" readonly style="background: var(--bg-surface); font-size: 0.82rem; font-family: monospace;">
+            <input type="text" id="input-share-link" class="form-control" readonly style="background: var(--bg-surface); font-size: 0.82rem; font-family: 'JetBrains Mono', monospace;">
             <button class="btn btn-secondary" id="btn-copy-share-link">Copy</button>
           </div>
         </div>
 
-        <div class="card" style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 14px;">
-          <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary);">How to Join This Trip:</div>
-          <div style="font-size: 0.82rem; color: var(--text-secondary);">
-            • Go to <b>upmarkcurve.com</b> and sign up / log in<br>
-            • Click <b>"Join a Trip"</b> and enter invite code: <span id="share-modal-pin" style="font-weight: 800; color: var(--brand-blue); letter-spacing: 2px;">------</span>
-          </div>
+        <div class="card" style="background: #EFF6FF; border: 1.5px dashed #93C5FD; padding: 14px; margin-bottom: 14px; text-align: center;">
+          <div style="font-size: 0.74rem; font-weight: 800; color: #1D4ED8; text-transform: uppercase; letter-spacing: 0.5px;">Trip Invite Code</div>
+          <div id="share-modal-pin" style="font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 800; color: #0066FF; letter-spacing: 5px; margin-top: 4px;">------</div>
         </div>
 
         <div style="display: flex; gap: 8px; flex-direction: column;">
-          <button class="btn btn-primary" id="btn-share-whatsapp-invite" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-            Share on WhatsApp
+          <button class="btn btn-primary" id="btn-share-whatsapp-invite" style="width: 100%; padding: 11px;">
+            Share Invite on WhatsApp
           </button>
-          <button class="btn btn-secondary" id="btn-copy-full-invite" style="width: 100%; padding: 8px;">
-            Copy Full Message with Instructions
+          <button class="btn btn-secondary" id="btn-copy-full-invite" style="width: 100%; padding: 10px;">
+            Copy Full Invite Message
           </button>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-share-trip">Close</button>
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-share-trip">Done</button>
       </div>
     </div>
   </div>
 
-  <!-- 8. Add Destination Stop Modal -->
+  <!-- 8. Add Destination Stop Modal (with Live Nominatim Geocoding Search) -->
   <div class="modal-overlay" id="modal-add-stop">
     <div class="modal-container">
       <div class="modal-header">
@@ -1089,47 +989,50 @@
       <div class="modal-body">
         <form id="form-add-stop">
           <div class="form-group">
-            <label class="form-label">Destination / City / Stop Name</label>
-            <input type="text" id="input-stop-name" class="form-control" placeholder="e.g. Mumbai, Goa, Manali, Jaipur..." required>
+            <label class="form-label">Search Place / City / Landmark</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="input-stop-name" class="form-control" placeholder="Type place name (e.g. Manali, Baga Beach, Airport)..." required autocomplete="off">
+              <button type="button" class="btn btn-secondary" id="btn-search-place-modal" style="white-space: nowrap;">Find on Map</button>
+            </div>
+            <div id="modal-place-search-results" class="route-search-results" style="display: none; margin-top: 6px;"></div>
           </div>
 
-          <!-- Quick Destination Presets -->
           <div style="margin-bottom: 14px;">
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">Popular Travel Hubs (Click to fill):</div>
+            <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Popular Destinations (Tap to autofill):</div>
             <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="preset-cities-chips">
-              <span class="chip-preset" data-name="Delhi" data-lat="28.6139" data-lng="77.2090">Delhi</span>
+              <span class="chip-preset" data-name="New Delhi" data-lat="28.6139" data-lng="77.2090">Delhi</span>
               <span class="chip-preset" data-name="Manali" data-lat="32.2432" data-lng="77.1892">Manali</span>
               <span class="chip-preset" data-name="Shimla" data-lat="31.1048" data-lng="77.1734">Shimla</span>
               <span class="chip-preset" data-name="Mumbai" data-lat="19.0760" data-lng="72.8777">Mumbai</span>
-              <span class="chip-preset" data-name="Goa" data-lat="15.2993" data-lng="74.1240">Goa</span>
+              <span class="chip-preset" data-name="Goa (Panaji)" data-lat="15.4909" data-lng="73.8278">Goa</span>
               <span class="chip-preset" data-name="Jaipur" data-lat="26.9124" data-lng="75.7873">Jaipur</span>
-              <span class="chip-preset" data-name="Bangalore" data-lat="12.9716" data-lng="77.5946">Bangalore</span>
+              <span class="chip-preset" data-name="Bengaluru" data-lat="12.9716" data-lng="77.5946">Bengaluru</span>
               <span class="chip-preset" data-name="Kolkata" data-lat="22.5726" data-lng="88.3639">Kolkata</span>
-              <span class="chip-preset" data-name="Srinagar" data-lat="34.0837" data-lng="74.7973">Srinagar</span>
-              <span class="chip-preset" data-name="Varanasi" data-lat="25.3176" data-lng="82.9739">Varanasi</span>
+              <span class="chip-preset" data-name="Darjeeling" data-lat="27.0410" data-lng="88.2663">Darjeeling</span>
+              <span class="chip-preset" data-name="Rishikesh" data-lat="30.0869" data-lng="78.2676">Rishikesh</span>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Latitude (Optional)</label>
-              <input type="number" step="any" id="input-stop-lat" class="form-control" placeholder="e.g. 19.076">
+              <label class="form-label">Latitude</label>
+              <input type="number" step="any" id="input-stop-lat" class="form-control" placeholder="Auto-filled">
             </div>
             <div class="form-group">
-              <label class="form-label">Longitude (Optional)</label>
-              <input type="number" step="any" id="input-stop-lng" class="form-control" placeholder="e.g. 72.877">
+              <label class="form-label">Longitude</label>
+              <input type="number" step="any" id="input-stop-lng" class="form-control" placeholder="Auto-filled">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Stay Notes / Day Plan</label>
-            <input type="text" id="input-stop-notes" class="form-control" placeholder="e.g. 2 nights hotel, sightseeing...">
+            <label class="form-label">Stay Notes / Activity Plan (Optional)</label>
+            <input type="text" id="input-stop-notes" class="form-control" placeholder="e.g. Day 1 check-in, lunch stop, viewpoint...">
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-close-modal="modal-add-stop">Cancel</button>
-        <button type="submit" form="form-add-stop" class="btn btn-primary">Add Stop</button>
+        <button type="submit" form="form-add-stop" class="btn btn-primary">Add to Route</button>
       </div>
     </div>
   </div>
@@ -1147,7 +1050,6 @@
           <div class="form-group">
             <label class="form-label">Traveler Name</label>
             <input type="text" id="input-rename-member-name" class="form-control" required style="font-weight: 700; font-size: 1.05rem;">
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Updates this traveler across all expenses, splits, and reports.</div>
           </div>
         </form>
       </div>
@@ -1158,10 +1060,8 @@
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- App Logic Scripts -->
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

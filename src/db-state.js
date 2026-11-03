@@ -1,13 +1,13 @@
 // =========================================================================
 // TRIP HISAB - SUPABASE STATE MANAGER
-// Replaces localStorage with real Supabase DB calls.
-// Keeps the same API as the old StateManager so UI code needs minimal changes.
+// Replaces localStorage with real Supabase DB calls + automatic fallback.
 // =========================================================================
 
 import {
   supabase,
   getUser,
   getTrip,
+  ensureUserJoinedTrip,
   getTripMembers,
   addPlaceholderMember,
   renameMember as dbRenameMember,
@@ -39,11 +39,13 @@ class SupabaseStateManager {
   constructor() {
     this.tripId = null;
     this.currentUser = null;
-    this.currentMember = null;  // the trip_member record for current user
+    this.currentMember = null;
     this.state = {
+      tripId: null,
       tripName: 'Loading...',
       currency: '₹',
       budget: 0,
+      inviteCode: '',
       members: [],
       expenses: [],
       kitty: { balance: 0, history: [] },
@@ -52,7 +54,7 @@ class SupabaseStateManager {
       messages: [],
       destinations: [],
       security: { enabled: false },
-      settings: { syncStatus: 'loading' }
+      settings: { syncStatus: 'loading', googleSheetUrl: '' }
     };
     this.listeners = new Set();
     this._unsubscribeRealtime = null;
@@ -64,6 +66,13 @@ class SupabaseStateManager {
     this.tripId = tripId;
     this.currentUser = await getUser();
     if (!this.currentUser) throw new Error('Not authenticated');
+
+    // Ensure user opening a shared link (?trip=...) is enrolled in trip_members first
+    try {
+      await ensureUserJoinedTrip(this.tripId);
+    } catch (e) {
+      console.warn('Auto-join check notice:', e);
+    }
 
     await this.loadAll();
     this._startRealtime();
@@ -83,21 +92,24 @@ class SupabaseStateManager {
         getTripDestinations(this.tripId)
       ]);
 
-      // Map DB format → app format
       const mappedMembers = this._mapMembers(members);
       let foundMember = mappedMembers.find(m => m.userId === this.currentUser.id);
       if (!foundMember) {
+        const defaultName = this.currentUser.user_metadata?.display_name || this.currentUser.email?.split('@')[0] || 'Traveler';
         foundMember = {
           id: this.currentUser.id,
           userId: this.currentUser.id,
-          name: this.currentUser.user_metadata?.display_name || this.currentUser.email?.split('@')[0] || 'Admin',
-          avatar: (this.currentUser.user_metadata?.display_name || this.currentUser.email || 'A').charAt(0).toUpperCase(),
+          name: defaultName,
+          avatar: defaultName.charAt(0).toUpperCase(),
           role: (trip.created_by === this.currentUser.id) ? 'admin' : 'member',
           color: '#0066FF'
         };
         mappedMembers.unshift(foundMember);
       }
       this.currentMember = foundMember;
+
+      // Keep local Google Sheet URL if configured for this trip
+      const savedSheetUrl = localStorage.getItem(`upmark_sheet_${this.tripId}`) || '';
 
       this.state = {
         tripId: trip.id,
@@ -108,20 +120,25 @@ class SupabaseStateManager {
         createdBy: trip.created_by,
         members: mappedMembers,
         expenses: this._mapExpenses(expenses, mappedMembers),
-        kitty: this._buildKittyState(kittyTx),
+        kitty: this._buildKittyState(kittyTx, mappedMembers),
         settlements: this._mapSettlements(settlements, mappedMembers),
         notes: this._mapNotes(notes),
         messages: messages || [],
         destinations: destinations || [],
         security: { enabled: false },
-        settings: { syncStatus: 'synced', lastSyncedAt: new Date().toISOString() }
+        settings: {
+          syncStatus: 'synced',
+          googleSheetUrl: savedSheetUrl,
+          lastSyncedAt: new Date().toISOString()
+        }
       };
 
       this.notify();
     } catch (err) {
       console.error('Failed to load trip data:', err);
-      this.state.settings = { syncStatus: 'error' };
+      this.state.settings = { ...this.state.settings, syncStatus: 'error' };
       this.notify();
+      throw err;
     }
   }
 
@@ -129,8 +146,7 @@ class SupabaseStateManager {
 
   _startRealtime() {
     if (this._unsubscribeRealtime) this._unsubscribeRealtime();
-    this._unsubscribeRealtime = subscribeToTrip(this.tripId, async (payload) => {
-      // Reload all data on any change
+    this._unsubscribeRealtime = subscribeToTrip(this.tripId, async () => {
       await this.loadAll();
     });
   }
@@ -143,60 +159,74 @@ class SupabaseStateManager {
 
   _mapMembers(members) {
     const colors = ['#0066FF', '#0284C7', '#2563EB', '#4F46E5', '#0D9488', '#334155', '#D97706', '#DC2626'];
-    return members.map((m, i) => ({
-      id: m.id,           // UUID from trip_members
+    return (members || []).map((m, i) => ({
+      id: m.id,
       userId: m.user_id,
-      name: m.display_name,
-      avatar: m.display_name.charAt(0).toUpperCase(),
+      name: m.display_name || 'Traveler',
+      avatar: (m.display_name || 'T').charAt(0).toUpperCase(),
       color: m.color || colors[i % colors.length],
-      role: m.role,
+      role: m.role || 'member',
       _raw: m
     }));
   }
 
   _mapExpenses(expenses, members) {
-    return expenses.map(e => ({
-      id: e.id,
-      title: e.title,
-      amount: parseFloat(e.amount) || 0,
-      category: e.category || 'Misc',
-      date: e.date,
-      time: e.created_at ? e.created_at.substring(11, 16) : '00:00',
-      payerId: e.payer_member_id || 'KITTY',
-      isPersonal: !!e.is_personal,
-      splitWith: e.split_with || members.map(m => m.id),
-      splitMode: 'EQUAL',
-      customSplits: {},
-      notes: e.notes || '',
-      createdAt: e.created_at,
-      _raw: e
-    }));
+    return (expenses || []).map(e => {
+      let payerId = e.payer_member_id || 'KITTY';
+      let rawNotes = e.notes || '';
+      const payerMatch = rawNotes.match(/^\[PAYER:([^\]]+)\]\s*/);
+      if (payerMatch) {
+        payerId = payerMatch[1];
+        rawNotes = rawNotes.replace(/^\[PAYER:([^\]]+)\]\s*/, '');
+      }
+      return {
+        id: e.id,
+        title: e.title,
+        amount: parseFloat(e.amount) || 0,
+        category: e.category || 'Misc',
+        date: e.date,
+        time: e.created_at ? e.created_at.substring(11, 16) : '00:00',
+        payerId,
+        isPersonal: !!e.is_personal,
+        splitWith: (e.split_with && e.split_with.length > 0) ? e.split_with : members.map(m => m.id),
+        splitMode: 'EQUAL',
+        customSplits: {},
+        notes: rawNotes,
+        createdAt: e.created_at,
+        _raw: e
+      };
+    });
   }
 
-  _buildKittyState(txList) {
+  _buildKittyState(txList, members = []) {
     let balance = 0;
-    const history = txList.map(tx => {
+    const history = (txList || []).map(tx => {
       const amt = parseFloat(tx.amount) || 0;
       if (tx.type === 'DEPOSIT') balance += amt;
       else if (tx.type === 'WITHDRAW' || tx.type === 'EXPENSE') balance -= amt;
       else if (tx.type === 'ADJUST') balance = amt;
+
+      const matchedMember = members.find(m => m.name.toLowerCase() === String(tx.member_name || '').toLowerCase());
+      const isAll = String(tx.member_name || '').toLowerCase().includes('all');
+
       return {
         id: tx.id,
         type: tx.type,
         amount: amt,
         member: tx.member_name || 'Pool',
+        memberId: isAll ? 'ALL' : (matchedMember ? matchedMember.id : 'POOL'),
         note: tx.note || '',
         date: tx.date,
         balanceAfter: balance,
         createdAt: tx.created_at,
         _raw: tx
       };
-    }).reverse(); // newest first for display
+    }).reverse();
     return { balance, history };
   }
 
-  _mapSettlements(settlements, members) {
-    return settlements.map(s => ({
+  _mapSettlements(settlements) {
+    return (settlements || []).map(s => ({
       id: s.id,
       from: s.from_member_id,
       to: s.to_member_id,
@@ -210,7 +240,7 @@ class SupabaseStateManager {
   }
 
   _mapNotes(notes) {
-    return notes.map(n => ({
+    return (notes || []).map(n => ({
       id: n.id,
       type: n.type || 'note',
       title: n.title,
@@ -233,7 +263,6 @@ class SupabaseStateManager {
     }
   }
 
-  // Undo/Redo stubs (not supported with DB backend)
   canUndo() { return false; }
   canRedo() { return false; }
   getUndoActionName() { return null; }
@@ -248,6 +277,15 @@ class SupabaseStateManager {
     if (currency !== undefined) updates.currency = currency.trim() || '₹';
     await dbUpdateTrip(this.tripId, updates);
     await this.loadAll();
+  }
+
+  updateGoogleSheetUrl(url) {
+    const clean = (url || '').trim();
+    if (this.tripId) {
+      localStorage.setItem(`upmark_sheet_${this.tripId}`, clean);
+    }
+    this.state.settings.googleSheetUrl = clean;
+    this.notify();
   }
 
   // ─── MEMBERS ─────────────────────────────────────────────────────────────
@@ -266,6 +304,10 @@ class SupabaseStateManager {
     await this.loadAll();
   }
 
+  async updateMember(memberId, { name }) {
+    if (name) await this.renameMember(memberId, name);
+  }
+
   async removeMember(memberId) {
     if (!memberId) return;
     await dbDeleteMember(memberId);
@@ -277,11 +319,27 @@ class SupabaseStateManager {
   async sendMessage(text) {
     const cleanText = String(text || '').trim();
     if (!cleanText) return;
+    const senderName = this.currentMember?.name || this.currentUser?.user_metadata?.display_name || 'Traveler';
+    const senderColor = this.currentMember?.color || '#0066FF';
+
+    // Optimistic UI update so message renders immediately on mobile/desktop
+    const optimisticMsg = {
+      id: 'temp_' + Date.now(),
+      trip_id: this.tripId,
+      user_id: this.currentUser?.id,
+      sender_name: senderName,
+      sender_color: senderColor,
+      message: cleanText,
+      created_at: new Date().toISOString()
+    };
+    this.state.messages = [...(this.state.messages || []), optimisticMsg];
+    this.notify();
+
     await sendTripMessage({
       tripId: this.tripId,
       message: cleanText,
-      senderName: this.currentMember?.name || 'Traveler',
-      senderColor: this.currentMember?.color || '#0066FF'
+      senderName,
+      senderColor
     });
     await this.loadAll();
   }
@@ -292,6 +350,21 @@ class SupabaseStateManager {
     const cleanName = String(name || '').trim();
     if (!cleanName) return;
     const currentCount = this.state.destinations?.length || 0;
+
+    // Optimistic UI update
+    const optimisticStop = {
+      id: 'temp_stop_' + Date.now(),
+      trip_id: this.tripId,
+      name: cleanName,
+      lat: lat || 0,
+      lng: lng || 0,
+      stop_order: currentCount + 1,
+      stay_notes: stayNotes || '',
+      est_duration: estDuration || ''
+    };
+    this.state.destinations = [...(this.state.destinations || []), optimisticStop];
+    this.notify();
+
     await dbAddDestination({
       tripId: this.tripId,
       name: cleanName,
@@ -306,6 +379,8 @@ class SupabaseStateManager {
 
   async removeDestination(id) {
     if (!id) return;
+    this.state.destinations = (this.state.destinations || []).filter(d => d.id !== id);
+    this.notify();
     await dbDeleteDestination(id);
     await this.loadAll();
   }
@@ -325,7 +400,6 @@ class SupabaseStateManager {
       notes: expenseData.notes || ''
     });
 
-    // Handle kitty deduction
     if (expenseData.payerId === 'KITTY' && !expenseData.isPersonal) {
       await dbAddKittyTx({
         tripId: this.tripId,
@@ -346,10 +420,20 @@ class SupabaseStateManager {
     if (updatedFields.amount !== undefined) dbUpdates.amount = parseFloat(updatedFields.amount);
     if (updatedFields.category !== undefined) dbUpdates.category = updatedFields.category;
     if (updatedFields.date !== undefined) dbUpdates.date = updatedFields.date;
-    if (updatedFields.payerId !== undefined) dbUpdates.payer_member_id = updatedFields.payerId === 'KITTY' ? null : updatedFields.payerId;
+    if (updatedFields.payerId !== undefined) {
+      const isPlanned = String(updatedFields.payerId).startsWith('planned_');
+      dbUpdates.payer_member_id = (updatedFields.payerId === 'KITTY' || isPlanned) ? null : updatedFields.payerId;
+      if (isPlanned) {
+        dbUpdates.notes = `[PAYER:${updatedFields.payerId}] ${updatedFields.notes || ''}`.trim();
+      } else if (updatedFields.notes !== undefined) {
+        dbUpdates.notes = updatedFields.notes;
+      }
+    } else if (updatedFields.notes !== undefined) {
+      dbUpdates.notes = updatedFields.notes;
+    }
     if (updatedFields.isPersonal !== undefined) dbUpdates.is_personal = updatedFields.isPersonal;
     if (updatedFields.splitWith !== undefined) dbUpdates.split_with = updatedFields.splitWith;
-    if (updatedFields.notes !== undefined) dbUpdates.notes = updatedFields.notes;
+
     await dbUpdateExpense(id, dbUpdates);
     await this.loadAll();
   }
@@ -367,7 +451,7 @@ class SupabaseStateManager {
     const member = this.state.members.find(m => m.id === memberId);
     const memberName = member ? member.name : (memberId === 'ALL' ? `All Members` : 'Pool');
     let totalAdded = num;
-    if (memberId === 'ALL') totalAdded = num * this.state.members.length;
+    if (memberId === 'ALL') totalAdded = num * (this.state.members.length || 1);
 
     await dbAddKittyTx({
       tripId: this.tripId,
@@ -450,19 +534,15 @@ class SupabaseStateManager {
     await this.loadAll();
   }
 
-  // Legacy stubs (not needed with DB backend)
-  updateGoogleSheetUrl() {}
+  // Legacy stubs
   updateSecuritySettings() {}
   setMemberPin() {}
-  updateMember() {}
-  removeMember() {}
   updateKittyTransaction() {}
   recalculateKittyLedger() {}
   exportBackup() { return JSON.stringify(this.state, null, 2); }
-  importBackup() { return { success: false, error: 'Not supported with database backend' }; }
+  importBackup() { return { success: false, error: 'Managed via live cloud database' }; }
   triggerAutoSync() {}
 }
 
 export const stateManager = new SupabaseStateManager();
 window.__tripHisabStateManager = stateManager;
-

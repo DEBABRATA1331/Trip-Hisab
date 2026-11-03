@@ -1,10 +1,10 @@
 // =========================================================================
-// TRIP HISAB - MAIN CONTROLLER & APPLICATION ENTRY POINT (NO EMOJIS, NO FAKE DATA)
+// TRIP HISAB - MAIN CONTROLLER & APPLICATION ENTRY POINT
 // =========================================================================
 
-// ─── SUPABASE IMPORTS ──────────────────────────────────────────────────────────
 import { getUser, signOut as supabaseSignOut } from './supabase.js';
 import { stateManager } from './db-state.js';
+import { mountAucklandSkylineCanvas } from './ascii-bg.js';
 import {
   renderApp,
   renderRouteView,
@@ -27,7 +27,6 @@ import {
 import { calculateTripSummary, generateGroupSummaryReportText } from './settlement.js';
 import { pushToGoogleSheet, pullFromGoogleSheet, exportToCSV, downloadBackupJSON } from './sheets-sync.js';
 
-// Preload Google Apps Script template code for easy copy-paste
 const APPS_SCRIPT_CODE = `/**
  * TRIP HISAB - GOOGLE APPS SCRIPT WEB APP
  * Paste this in your Google Sheet (Extensions -> Apps Script -> Code.gs)
@@ -46,40 +45,13 @@ function doPost(e) {
     lock.waitLock(30000);
     var payload = JSON.parse(e.postData ? e.postData.contents : e.parameter.data);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    // Store backup
     var store = ss.getSheetByName("_DATA_STORE_") || ss.insertSheet("_DATA_STORE_");
     store.getRange(1, 1).setValue(JSON.stringify(payload));
-    
-    // Format Overview Tab
     var summary = ss.getSheetByName("Trip Overview") || ss.insertSheet("Trip Overview", 0);
     summary.clear();
-    summary.getRange("A1:D1").setValues([["TRIP: " + (payload.tripName || "Hisab"), "", "", ""]]).setBackground("#2563EB").setFontColor("#FFF").setFontWeight("bold");
+    summary.getRange("A1:D1").setValues([["TRIP: " + (payload.tripName || "Hisab"), "", "", ""]]).setBackground("#0066FF").setFontColor("#FFF").setFontWeight("bold");
     summary.getRange("A2:B2").setValues([["Total Group Spend", (payload.currency || "₹") + " " + (payload.summary ? payload.summary.totalGroupSpend : 0)]]);
     summary.getRange("A3:B3").setValues([["Group Kitty Pool", (payload.currency || "₹") + " " + (payload.kitty ? payload.kitty.balance : 0)]]);
-    
-    // Member balances table
-    summary.getRange("A5:D5").setValues([["Member Name", "Paid for Group", "Share of Group", "Net Balance"]]).setBackground("#0F172A").setFontColor("#FFF");
-    var mRows = [];
-    (payload.members || []).forEach(function(m) {
-      var s = (payload.summary && payload.summary.members && payload.summary.members[m.id]) || {};
-      var paid = s.paid !== undefined ? s.paid : (s.paidForGroup !== undefined ? s.paidForGroup : 0);
-      var share = s.share !== undefined ? s.share : (s.shareOfGroup !== undefined ? s.shareOfGroup : 0);
-      var balance = s.balance !== undefined ? s.balance : (s.netGroupBalance !== undefined ? s.netGroupBalance : 0);
-      mRows.push([m.name, paid, share, balance]);
-    });
-    if (mRows.length) summary.getRange(6, 1, mRows.length, 4).setValues(mRows);
-    
-    // Format Group Expenses Tab
-    var expSheet = ss.getSheetByName("Group Expenses") || ss.insertSheet("Group Expenses", 1);
-    expSheet.clear();
-    expSheet.getRange("A1:E1").setValues([["Date", "Title", "Category", "Amount", "Paid By"]]).setBackground("#0F172A").setFontColor("#FFF");
-    var eRows = [];
-    (payload.expenses || []).filter(function(x){return !x.isPersonal;}).forEach(function(x) {
-      eRows.push([x.date, x.title, x.category, Number(x.amount)||0, x.payerId==="KITTY"?"Group Kitty":(x.payerId||"")]);
-    });
-    if (eRows.length) expSheet.getRange(2, 1, eRows.length, 5).setValues(eRows);
-
     return ContentService.createTextOutput(JSON.stringify({status:"success", time:new Date().toISOString()})).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({status:"error", error:err.toString()})).setMimeType(ContentService.MimeType.JSON);
@@ -88,12 +60,22 @@ function doPost(e) {
   }
 }`;
 
-// Clean legacy seeded data if present from earlier tests
-function cleanLegacyFakeData() {
-  // Safe no-op to guarantee existing user data, members, expenses, and sessions are never wiped
+/**
+ * Geocode a place query via OpenStreetMap Nominatim
+ */
+async function searchPlacesNominatim(query) {
+  const q = String(query || '').trim();
+  if (!q) return [];
+  try {
+    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`);
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
 }
 
-// Setup Event Listeners
 function setupEventListeners() {
   // 1. Navigation Tabs
   document.querySelectorAll('.nav-tab-btn, .mobile-nav-item').forEach(btn => {
@@ -103,58 +85,19 @@ function setupEventListeners() {
     });
   });
 
-  // 2. Undo / Redo Buttons
-  const btnUndo = document.getElementById('btn-undo');
-  const btnRedo = document.getElementById('btn-redo');
+  // 2. Add Expense Buttons
+  document.getElementById('btn-quick-add-header')?.addEventListener('click', () => openExpenseModal());
+  document.getElementById('fab-add-expense')?.addEventListener('click', () => openExpenseModal());
+  document.getElementById('btn-dash-add-expense')?.addEventListener('click', () => openExpenseModal());
+  document.getElementById('btn-add-expense-tab')?.addEventListener('click', () => openExpenseModal());
 
-  btnUndo.addEventListener('click', () => {
-    const action = stateManager.undo();
-    if (action) {
-      showToast(`Undone: ${action}`);
-    }
-  });
+  // 3. Expense Type Toggle (Group vs Personal)
+  document.getElementById('btn-toggle-group-exp')?.addEventListener('click', () => setExpenseMode(false));
+  document.getElementById('btn-toggle-personal-exp')?.addEventListener('click', () => setExpenseMode(true));
 
-  btnRedo.addEventListener('click', () => {
-    const action = stateManager.redo();
-    if (action) {
-      showToast(`Redone: ${action}`);
-    }
-  });
-
-  // Global Keyboard Shortcuts (Ctrl+Z / Ctrl+Y / Cmd+Z / Cmd+Shift+Z)
-  window.addEventListener('keydown', (e) => {
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
-      return;
-    }
-
-    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-    if (isCtrlOrCmd && !e.shiftKey && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      const action = stateManager.undo();
-      if (action) showToast(`Undone: ${action}`);
-    } else if (
-      (isCtrlOrCmd && e.key.toLowerCase() === 'y') ||
-      (isCtrlOrCmd && e.shiftKey && e.key.toLowerCase() === 'z')
-    ) {
-      e.preventDefault();
-      const action = stateManager.redo();
-      if (action) showToast(`Redone: ${action}`);
-    }
-  });
-
-  // 3. Add Expense Buttons
-  document.getElementById('btn-quick-add-header').addEventListener('click', () => openExpenseModal());
-  document.getElementById('fab-add-expense').addEventListener('click', () => openExpenseModal());
-  document.getElementById('btn-dash-add-expense').addEventListener('click', () => openExpenseModal());
-  document.getElementById('btn-add-expense-tab').addEventListener('click', () => openExpenseModal());
-
-  // 4. Expense Type Toggle (Group vs Personal)
-  document.getElementById('btn-toggle-group-exp').addEventListener('click', () => setExpenseMode(false));
-  document.getElementById('btn-toggle-personal-exp').addEventListener('click', () => setExpenseMode(true));
-
-  // 5. Expense Form Submission
+  // 4. Expense Form Submission
   const formExpense = document.getElementById('form-expense');
-  formExpense.addEventListener('submit', (e) => {
+  formExpense?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('input-expense-id').value;
     const title = document.getElementById('input-exp-title').value.trim();
@@ -166,70 +109,51 @@ function setupEventListeners() {
     const isPersonal = isPersonalMode();
 
     if (!amount || amount <= 0) {
-      alert('Please enter a valid amount');
+      showToast('Please enter a valid amount');
       return;
     }
 
     const splitWith = isPersonal ? [] : getSelectedSplitMembers();
     if (!isPersonal && splitWith.length === 0) {
-      alert('Please select at least 1 person to split with');
+      showToast('Select at least 1 friend to split with');
       return;
-    }
-
-    if (id) {
-      // Edit
-      stateManager.updateExpense(id, {
-        title,
-        amount,
-        category,
-        payerId,
-        date,
-        notes,
-        isPersonal,
-        splitWith
-      });
-      showToast(`Updated "${title}"`, 'Undo', () => stateManager.undo());
-    } else {
-      // Add
-      stateManager.addExpense({
-        title,
-        amount,
-        category,
-        payerId,
-        date,
-        notes,
-        isPersonal,
-        splitWith
-      });
-      showToast(`Added "${title}"`, 'Undo', () => stateManager.undo());
     }
 
     closeModal('modal-expense');
     formExpense.reset();
+
+    try {
+      if (id) {
+        await stateManager.updateExpense(id, { title, amount, category, payerId, date, notes, isPersonal, splitWith });
+        showToast(`Updated "${title}"`);
+      } else {
+        await stateManager.addExpense({ title, amount, category, payerId, date, notes, isPersonal, splitWith });
+        showToast(`Added "${title}"`);
+      }
+    } catch (err) {
+      showToast('Could not save expense: ' + (err.message || ''));
+    }
   });
 
-  // Amount input change updates live split preview
-  document.getElementById('input-exp-amount').addEventListener('input', updateSplitPreview);
+  document.getElementById('input-exp-amount')?.addEventListener('input', updateSplitPreview);
 
-  // Split Checkbox delegates
-  document.getElementById('split-members-checkboxes').addEventListener('change', (e) => {
+  document.getElementById('split-members-checkboxes')?.addEventListener('change', (e) => {
     if (e.target.classList.contains('cb-split-member')) {
       toggleSplitMember(e.target.value, e.target.checked);
     }
   });
-  document.getElementById('btn-split-select-all').addEventListener('click', selectAllSplitMembers);
-  document.getElementById('btn-split-clear-all').addEventListener('click', clearAllSplitMembers);
+  document.getElementById('btn-split-select-all')?.addEventListener('click', selectAllSplitMembers);
+  document.getElementById('btn-split-clear-all')?.addEventListener('click', clearAllSplitMembers);
 
-  // 6. Expense List Filters & Search
+  // 5. Expense List Filters & Search
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => setExpenseFilter(btn.dataset.filter));
   });
 
-  const searchInput = document.getElementById('expense-search-input');
-  searchInput.addEventListener('input', (e) => setSearchQuery(e.target.value));
+  document.getElementById('expense-search-input')?.addEventListener('input', (e) => setSearchQuery(e.target.value));
 
-  // Edit / Delete Expense Actions (Delegation)
-  document.addEventListener('click', (e) => {
+  // 6. Delegated Clicks (Expenses, Members, Settlements, Notes, Kitty, Stops)
+  document.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('.btn-edit-exp');
     if (editBtn) {
       const id = editBtn.dataset.id;
@@ -243,13 +167,12 @@ function setupEventListeners() {
       const id = deleteBtn.dataset.id;
       const expense = stateManager.state.expenses.find(x => x.id === id);
       if (expense && confirm(`Delete "${expense.title}" (${stateManager.state.currency}${expense.amount})?`)) {
-        stateManager.deleteExpense(id);
-        showToast(`Deleted "${expense.title}"`, 'Undo', () => stateManager.undo());
+        await stateManager.deleteExpense(id);
+        showToast(`Deleted "${expense.title}"`);
       }
       return;
     }
 
-    // View Member Report Card click
     const viewMemberBtn = e.target.closest('.btn-view-member-report, .member-report-card');
     if (viewMemberBtn) {
       const memberId = viewMemberBtn.dataset.id || viewMemberBtn.dataset.memberId;
@@ -257,86 +180,80 @@ function setupEventListeners() {
       return;
     }
 
-    // Quick Settle Button
     const quickSettleBtn = e.target.closest('.btn-quick-settle');
     if (quickSettleBtn) {
       openSettlementModal(quickSettleBtn.dataset.from, quickSettleBtn.dataset.to, quickSettleBtn.dataset.amount);
       return;
     }
 
-    // Delete Settlement Button
     const deleteSettleBtn = e.target.closest('.btn-delete-settlement');
     if (deleteSettleBtn) {
-      stateManager.deleteSettlement(deleteSettleBtn.dataset.id);
-      showToast('Settlement deleted', 'Undo', () => stateManager.undo());
+      await stateManager.deleteSettlement(deleteSettleBtn.dataset.id);
+      showToast('Settlement deleted');
       return;
     }
 
-    // Delete Note Button
     const deleteNoteBtn = e.target.closest('.btn-delete-note');
     if (deleteNoteBtn) {
-      const id = deleteNoteBtn.dataset.id;
-      stateManager.deleteNote(id);
-      showToast('Note deleted', 'Undo', () => stateManager.undo());
+      await stateManager.deleteNote(deleteNoteBtn.dataset.id);
+      showToast('Note deleted');
       return;
     }
 
-    // Edit Note Button
     const editNoteBtn = e.target.closest('.btn-edit-note');
     if (editNoteBtn) {
-      const id = editNoteBtn.dataset.id;
-      const note = stateManager.state.notes.find(n => n.id === id);
+      const note = stateManager.state.notes.find(n => n.id === editNoteBtn.dataset.id);
       if (note) openNoteModal(note);
       return;
     }
 
-    // Copy Note Content
     const copyNoteBtn = e.target.closest('.btn-copy-note');
     if (copyNoteBtn) {
-      const content = copyNoteBtn.dataset.content;
-      navigator.clipboard.writeText(content).then(() => {
+      navigator.clipboard.writeText(copyNoteBtn.dataset.content || '').then(() => {
         showToast('Copied to clipboard');
       });
       return;
     }
 
-    // Edit Kitty Transaction Button
-    const editKittyBtn = e.target.closest('.btn-edit-kitty');
-    if (editKittyBtn) {
-      const id = editKittyBtn.dataset.id;
-      const item = (stateManager.state.kitty?.history || []).find(h => h.id === id);
-      if (item) {
-        if (item.type === 'EXPENSE' && item.expenseId) {
-          const exp = stateManager.state.expenses.find(x => x.id === item.expenseId);
-          if (exp) {
-            openExpenseModal(exp);
-            return;
-          }
-        }
-        openKittyActionModal(item.type, item);
-      }
-      return;
-    }
-
-    // Delete Kitty Transaction Button
     const deleteKittyBtn = e.target.closest('.btn-delete-kitty');
     if (deleteKittyBtn) {
       const id = deleteKittyBtn.dataset.id;
       const item = (stateManager.state.kitty?.history || []).find(h => h.id === id);
-      if (item) {
-        if (confirm(`Delete pool transaction "${item.note || item.type}" (${stateManager.state.currency}${item.amount})? Pool balance and member reports will be updated automatically.`)) {
-          if (item.type === 'EXPENSE' && item.expenseId) {
-            stateManager.deleteExpense(item.expenseId);
-          } else {
-            stateManager.deleteKittyTransaction(id);
-          }
-          showToast(`Deleted "${item.note || item.type}"`, 'Undo', () => stateManager.undo());
-        }
+      if (item && confirm(`Delete pool transaction "${item.note || item.type}"?`)) {
+        await stateManager.deleteKittyTransaction(id);
+        showToast('Pool entry deleted');
       }
       return;
     }
 
-    // Close Modal via background click or close button
+    const btnRemoveStop = e.target.closest('.btn-remove-stop');
+    if (btnRemoveStop) {
+      const stopId = btnRemoveStop.dataset.id;
+      await stateManager.removeDestination(stopId);
+      showToast('Stop removed from route');
+      return;
+    }
+
+    const btnRenameMember = e.target.closest('.btn-rename-member');
+    if (btnRenameMember) {
+      document.getElementById('input-rename-member-id').value = btnRenameMember.dataset.id;
+      document.getElementById('input-rename-member-name').value = btnRenameMember.dataset.name || '';
+      openModal('modal-rename-member');
+      setTimeout(() => document.getElementById('input-rename-member-name')?.focus(), 60);
+      return;
+    }
+
+    const btnRemoveMember = e.target.closest('.btn-remove-member');
+    if (btnRemoveMember) {
+      const memberId = btnRemoveMember.dataset.id;
+      const member = stateManager.state.members.find(m => m.id === memberId);
+      if (confirm(`Remove "${member ? member.name : 'this traveler'}" from the trip?`)) {
+        await stateManager.removeMember(memberId);
+        showToast('Friend removed');
+      }
+      return;
+    }
+
     const closeBtn = e.target.closest('[data-close-modal]');
     if (closeBtn) {
       closeModal(closeBtn.dataset.closeModal);
@@ -349,61 +266,46 @@ function setupEventListeners() {
   });
 
   // 7. Group Kitty Actions
-  document.getElementById('btn-dash-kitty-deposit').addEventListener('click', () => openKittyActionModal('DEPOSIT'));
-  document.getElementById('btn-kitty-add-deposit').addEventListener('click', () => openKittyActionModal('DEPOSIT'));
-  document.getElementById('btn-kitty-withdraw').addEventListener('click', () => openKittyActionModal('WITHDRAW'));
-  document.getElementById('btn-kitty-modify').addEventListener('click', () => openKittyActionModal('MODIFY'));
+  document.getElementById('btn-dash-kitty-deposit')?.addEventListener('click', () => openKittyActionModal('DEPOSIT'));
+  document.getElementById('btn-kitty-add-deposit')?.addEventListener('click', () => openKittyActionModal('DEPOSIT'));
+  document.getElementById('btn-kitty-withdraw')?.addEventListener('click', () => openKittyActionModal('WITHDRAW'));
+  document.getElementById('btn-kitty-modify')?.addEventListener('click', () => openKittyActionModal('MODIFY'));
 
   const formKitty = document.getElementById('form-kitty-action');
-  formKitty.addEventListener('submit', (e) => {
+  formKitty?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const editId = document.getElementById('kitty-edit-id').value;
-    let type = document.getElementById('kitty-action-type').value;
-    if (editId) {
-      type = document.getElementById('select-kitty-type').value || type;
-    }
+    const type = document.getElementById('kitty-action-type').value;
     const amount = parseFloat(document.getElementById('input-kitty-amount').value);
     const memberId = document.getElementById('select-kitty-member').value;
     const note = document.getElementById('input-kitty-note').value.trim();
     const date = document.getElementById('input-kitty-date').value;
 
-    if (isNaN(amount) || (type !== 'MODIFY' && type !== 'ADJUST' && amount <= 0)) {
-      alert('Please enter a valid amount');
+    if (isNaN(amount) || (type !== 'MODIFY' && amount <= 0)) {
+      showToast('Please enter a valid amount');
       return;
-    }
-
-    if (editId) {
-      stateManager.updateKittyTransaction(editId, {
-        type,
-        amount,
-        memberId: (type === 'ADJUST' ? 'POOL' : memberId),
-        note,
-        date
-      });
-      showToast(`Pool transaction updated`, 'Undo', () => stateManager.undo());
-    } else {
-      if (type === 'DEPOSIT') {
-        stateManager.addKittyDeposit({ amount, memberId, note, date });
-        showToast(`Added to pool`, 'Undo', () => stateManager.undo());
-      } else if (type === 'WITHDRAW') {
-        stateManager.withdrawKitty({ amount, memberId, note, date });
-        showToast(`Withdrawn from pool`, 'Undo', () => stateManager.undo());
-      } else if (type === 'MODIFY') {
-        stateManager.modifyKittyBalance({ newBalance: amount, reason: note, date });
-        showToast(`Adjusted pool balance`, 'Undo', () => stateManager.undo());
-      }
     }
 
     closeModal('modal-kitty-action');
     formKitty.reset();
+
+    if (type === 'DEPOSIT') {
+      await stateManager.addKittyDeposit({ amount, memberId, note, date });
+      showToast('Added money to Group Kitty');
+    } else if (type === 'WITHDRAW') {
+      await stateManager.withdrawKitty({ amount, memberId, note, date });
+      showToast('Withdrawn cash from Kitty');
+    } else if (type === 'MODIFY') {
+      await stateManager.modifyKittyBalance({ newBalance: amount, reason: note, date });
+      showToast('Kitty balance updated');
+    }
   });
 
-  // 8. Settlement Modal & Actions
-  document.getElementById('btn-dash-settle').addEventListener('click', () => openSettlementModal());
-  document.getElementById('btn-record-settlement-split').addEventListener('click', () => openSettlementModal());
+  // 8. Settlement Modal
+  document.getElementById('btn-dash-settle')?.addEventListener('click', () => openSettlementModal());
+  document.getElementById('btn-record-settlement-split')?.addEventListener('click', () => openSettlementModal());
 
   const formSettlement = document.getElementById('form-settlement');
-  formSettlement.addEventListener('submit', (e) => {
+  formSettlement?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const from = document.getElementById('select-settle-from').value;
     const to = document.getElementById('select-settle-to').value;
@@ -411,41 +313,41 @@ function setupEventListeners() {
     const note = document.getElementById('input-settle-note').value.trim();
 
     if (!amount || amount <= 0) {
-      alert('Please enter a valid settled amount');
+      showToast('Enter a valid amount');
       return;
     }
     if (from === to) {
-      alert('Debtor and Creditor cannot be the same person');
+      showToast('Payer and receiver must be different');
       return;
     }
 
-    stateManager.recordSettlement({ from, to, amount, note });
-    showToast(`Settlement recorded`, 'Undo', () => stateManager.undo());
     closeModal('modal-settlement');
     formSettlement.reset();
+    await stateManager.recordSettlement({ from, to, amount, note });
+    showToast('Settlement recorded');
   });
 
-  // 9. Notes & Numbers Modal
-  document.getElementById('btn-add-note').addEventListener('click', () => openNoteModal());
+  // 9. Notes Modal
+  document.getElementById('btn-add-note')?.addEventListener('click', () => openNoteModal());
 
   const formNote = document.getElementById('form-note');
-  formNote.addEventListener('submit', (e) => {
+  formNote?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('input-note-id').value;
     const type = document.getElementById('select-note-type').value;
     const title = document.getElementById('input-note-title').value.trim();
     const content = document.getElementById('input-note-content').value.trim();
 
-    if (id) {
-      stateManager.updateNote(id, { type, title, content });
-      showToast(`Note updated: "${title}"`, 'Undo', () => stateManager.undo());
-    } else {
-      stateManager.addNote({ type, title, content });
-      showToast(`Note added: "${title}"`, 'Undo', () => stateManager.undo());
-    }
-
     closeModal('modal-note');
     formNote.reset();
+
+    if (id) {
+      await stateManager.updateNote(id, { type, title, content });
+      showToast(`Note updated: "${title}"`);
+    } else {
+      await stateManager.addNote({ type, title, content });
+      showToast(`Note saved: "${title}"`);
+    }
   });
 
   // 10. Summary Share
@@ -454,297 +356,31 @@ function setupEventListeners() {
     const text = generateGroupSummaryReportText(summary, stateManager.state.tripName);
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
-  document.getElementById('btn-dash-share-summary').addEventListener('click', shareGroupHisab);
-  document.getElementById('btn-share-all-whatsapp').addEventListener('click', shareGroupHisab);
+  document.getElementById('btn-dash-share-summary')?.addEventListener('click', shareGroupHisab);
+  document.getElementById('btn-share-all-whatsapp')?.addEventListener('click', shareGroupHisab);
 
-  // 11. Quick Links in Dashboard to tabs
-  document.getElementById('btn-open-splits-tab').addEventListener('click', () => setActiveTab('splits'));
-  document.getElementById('btn-open-all-expenses').addEventListener('click', () => setActiveTab('expenses'));
+  document.getElementById('btn-open-splits-tab')?.addEventListener('click', () => setActiveTab('splits'));
+  document.getElementById('btn-open-all-expenses')?.addEventListener('click', () => setActiveTab('expenses'));
 
-  // 12. Trip Header & Settings & Member Management
+  // 11. Settings & Friends Navigation
   const goToManageMembers = () => {
     setActiveTab('settings');
-    const target = document.getElementById('card-members-settings');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById('card-members-access-settings')?.scrollIntoView({ behavior: 'smooth' });
   };
-  document.getElementById('btn-edit-trip-header').addEventListener('click', () => setActiveTab('settings'));
-  document.getElementById('header-sync-pill').addEventListener('click', () => setActiveTab('settings'));
-  document.getElementById('header-members-count').addEventListener('click', goToManageMembers);
-  document.getElementById('btn-header-manage-members').addEventListener('click', goToManageMembers);
-  const btnOpenMembers = document.getElementById('btn-open-manage-members');
-  if (btnOpenMembers) btnOpenMembers.addEventListener('click', goToManageMembers);
+  document.getElementById('btn-edit-trip-header')?.addEventListener('click', () => setActiveTab('settings'));
+  document.getElementById('header-sync-pill')?.addEventListener('click', () => setActiveTab('settings'));
+  document.getElementById('header-members-count')?.addEventListener('click', goToManageMembers);
+  document.getElementById('btn-header-manage-members')?.addEventListener('click', goToManageMembers);
+  document.getElementById('btn-open-manage-members')?.addEventListener('click', goToManageMembers);
 
-  document.getElementById('input-trip-name').addEventListener('change', (e) => {
-    stateManager.updateTripInfo({ name: e.target.value });
-    showToast('Trip name updated', 'Undo', () => stateManager.undo());
+  document.getElementById('input-trip-name')?.addEventListener('change', async (e) => {
+    await stateManager.updateTripInfo({ name: e.target.value });
+    showToast('Trip name updated');
   });
 
-  document.getElementById('select-currency').addEventListener('change', (e) => {
-    stateManager.updateTripInfo({ currency: e.target.value });
-    showToast(`Currency changed to ${e.target.value}`);
-  });
-
-  // Member Rename in Settings
-  document.getElementById('settings-members-list').addEventListener('change', (e) => {
-    if (e.target.classList.contains('input-member-rename')) {
-      const id = e.target.dataset.id;
-      const newName = e.target.value.trim();
-      if (newName) {
-        stateManager.updateMember(id, { name: newName });
-        showToast(`Member renamed to ${newName}`, 'Undo', () => stateManager.undo());
-      }
-    }
-  });
-
-  // Member Remove in Settings
-  document.getElementById('settings-members-list').addEventListener('click', (e) => {
-    const removeBtn = e.target.closest('.btn-remove-member');
-    if (removeBtn) {
-      const id = removeBtn.dataset.id;
-      const member = stateManager.state.members.find(m => m.id === id);
-      const name = member ? member.name : 'member';
-      if (confirm(`Remove "${name}" from this trip?`)) {
-        stateManager.removeMember(id);
-        showToast(`Removed ${name}`, 'Undo', () => stateManager.undo());
-      }
-    }
-  });
-
-  // Member Add in Settings
-  const handleAddMember = () => {
-    const input = document.getElementById('input-new-member-name');
-    const name = input.value.trim();
-    if (name) {
-      stateManager.addMember(name);
-      input.value = '';
-      showToast(`Added friend: ${name}`, 'Undo', () => stateManager.undo());
-    } else {
-      input.focus();
-    }
-  };
-  document.getElementById('btn-add-member').addEventListener('click', handleAddMember);
-  document.getElementById('input-new-member-name').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddMember();
-    }
-  });
-
-  // 13. Google Sheets Integration
-  document.getElementById('btn-save-sheet-url').addEventListener('click', () => {
-    const url = document.getElementById('input-google-sheet-url').value.trim();
-    stateManager.updateGoogleSheetUrl(url);
-    if (url) {
-      showToast('Saving and syncing with Google Sheet...');
-      pushToGoogleSheet(stateManager.state, true).then(res => {
-        if (res.success) {
-          showToast('Connected and synced to Google Sheet');
-        } else {
-          showToast(`Sync issue: ${res.error || 'Check Web App URL'}`);
-        }
-      });
-    } else {
-      showToast('Google Sheet disconnected');
-    }
-  });
-
-  document.getElementById('btn-manual-sync-now').addEventListener('click', () => {
-    showToast('Syncing with Google Sheet...');
-    pushToGoogleSheet(stateManager.state, true).then(res => {
-      if (res.success) {
-        showToast('Google Sheet is up to date');
-      } else {
-        showToast(`Sync error: ${res.error || 'Check URL'}`);
-      }
-    });
-  });
-
-  document.getElementById('btn-view-apps-script-guide').addEventListener('click', () => {
-    document.getElementById('code-apps-script-box').value = APPS_SCRIPT_CODE;
-    openModal('modal-apps-script-guide');
-  });
-
-  document.getElementById('btn-copy-apps-script').addEventListener('click', () => {
-    navigator.clipboard.writeText(APPS_SCRIPT_CODE).then(() => {
-      showToast('Apps Script code copied to clipboard');
-    });
-  });
-
-  // 14. Backup & CSV Export
-  document.getElementById('btn-export-csv').addEventListener('click', () => {
-    exportToCSV(stateManager.state);
-    showToast('Downloaded CSV report');
-  });
-
-  document.getElementById('btn-download-backup').addEventListener('click', () => {
-    downloadBackupJSON(stateManager.state);
-    showToast('Backup file saved');
-  });
-
-  document.getElementById('input-restore-backup').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const res = stateManager.importBackup(evt.target.result);
-      if (res.success) {
-        showToast('Trip data restored successfully');
-      } else {
-        alert(`Restore error: ${res.error}`);
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  });
-
-  // 15. Header Logout Button — uses Supabase signOut
-  const btnLogout = document.getElementById('btn-header-logout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', async () => {
-      if (confirm('Log out from Trip Hisab?')) {
-        stateManager.destroy?.();
-        await supabaseSignOut();
-        window.location.href = './login.html';
-      }
-    });
-  }
-
-  // 16. Share Trip Link Events
-  document.getElementById('btn-header-share-trip').addEventListener('click', openShareTripModal);
-  document.getElementById('btn-settings-share-link').addEventListener('click', openShareTripModal);
-
-  document.getElementById('btn-copy-share-link').addEventListener('click', () => {
-    const link = document.getElementById('input-share-link').value;
-    navigator.clipboard.writeText(link).then(() => {
-      showToast('Trip link copied to clipboard!');
-    });
-  });
-
-  document.getElementById('btn-copy-full-invite')?.addEventListener('click', () => {
-    const state = stateManager.state;
-    const link = `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
-    const msg = `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
-      `Track expenses, calculate splits, manage kitty pool, and settle hisab live together.\n` +
-      `Direct Link: ${link}\n` +
-      `Invite Code: ${state.inviteCode || ''}\n\n` +
-      `Official upmarkcurve.com · 256-bit Encrypted Group Channel`;
-    navigator.clipboard.writeText(msg).then(() => {
-      showToast('Trip invitation copied to clipboard!');
-    });
-  });
-
-  document.getElementById('btn-share-whatsapp-invite')?.addEventListener('click', () => {
-    const state = stateManager.state;
-    const link = `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
-    const msg = `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
-      `Track expenses, calculate splits, manage kitty pool, and settle hisab live together.\n` +
-      `Direct Link: ${link}\n` +
-      `Invite Code: ${state.inviteCode || ''}\n\n` +
-      `Official upmarkcurve.com · 256-bit Encrypted Group Channel`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-  });
-
-  // Dedicated Dashboard Share Banner Buttons
-  document.getElementById('btn-dash-copy-link')?.addEventListener('click', () => {
-    const link = document.getElementById('dash-share-url-input')?.value || `${window.location.origin}/index.html?trip=${stateManager.state.tripId || ''}`;
-    navigator.clipboard.writeText(link).then(() => {
-      showToast('Trip invite link copied!');
-    });
-  });
-
-  document.getElementById('btn-dash-share-whatsapp')?.addEventListener('click', () => {
-    const state = stateManager.state;
-    const link = document.getElementById('dash-share-url-input')?.value || `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
-    const msg = `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
-      `Monitor all our trip expenses & hisab together live.\n` +
-      `Link: ${link}\n` +
-      `Invite Code: ${state.inviteCode || ''}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-  });
-
-  // 17. Trip Chat: Send Message
-  document.getElementById('form-chat-send')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const input = document.getElementById('input-chat-message');
-    const text = (input.value || '').trim();
-    if (!text) return;
-    input.value = '';
-    try {
-      await stateManager.sendMessage(text);
-      renderApp();
-    } catch (err) {
-      showToast('Failed to send message: ' + (err.message || ''));
-    }
-  });
-
-  // 18. Route & Waypoints: Add Stop Modal & Preset chips
-  document.getElementById('btn-open-add-stop')?.addEventListener('click', () => {
-    document.getElementById('form-add-stop')?.reset();
-    openModal('modal-add-stop');
-    setTimeout(() => document.getElementById('input-stop-name')?.focus(), 60);
-  });
-
-  document.querySelectorAll('#preset-cities-chips .chip-preset').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.getElementById('input-stop-name').value = chip.dataset.name;
-      document.getElementById('input-stop-lat').value = chip.dataset.lat;
-      document.getElementById('input-stop-lng').value = chip.dataset.lng;
-    });
-  });
-
-  document.getElementById('form-add-stop')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('input-stop-name').value.trim();
-    const lat = parseFloat(document.getElementById('input-stop-lat').value) || 0;
-    const lng = parseFloat(document.getElementById('input-stop-lng').value) || 0;
-    const stayNotes = document.getElementById('input-stop-notes').value.trim();
-
-    closeModal('modal-add-stop');
-    showToast(`Adding stop ${name}...`);
-    try {
-      await stateManager.addDestination({ name, lat, lng, stayNotes });
-      renderApp();
-      showToast(`Stop added: ${name}`);
-    } catch (err) {
-      showToast('Failed to add stop: ' + (err.message || ''));
-    }
-  });
-
-  // Delegate for dynamic buttons: remove stop, rename member, remove member
-  document.addEventListener('click', async (e) => {
-    const btnRemoveStop = e.target.closest('.btn-remove-stop');
-    if (btnRemoveStop) {
-      const stopId = btnRemoveStop.dataset.id;
-      if (confirm('Remove this destination stop?')) {
-        await stateManager.removeDestination(stopId);
-        renderApp();
-      }
-      return;
-    }
-
-    const btnRenameMember = e.target.closest('.btn-rename-member');
-    if (btnRenameMember) {
-      const memberId = btnRenameMember.dataset.id;
-      const currentName = btnRenameMember.dataset.name || '';
-      document.getElementById('input-rename-member-id').value = memberId;
-      document.getElementById('input-rename-member-name').value = currentName;
-      openModal('modal-rename-member');
-      setTimeout(() => document.getElementById('input-rename-member-name')?.focus(), 60);
-      return;
-    }
-
-    const btnRemoveMember = e.target.closest('.btn-remove-member');
-    if (btnRemoveMember) {
-      const memberId = btnRemoveMember.dataset.id;
-      if (confirm('Remove this traveler from the trip?')) {
-        await stateManager.removeMember(memberId);
-        renderApp();
-        showToast('Traveler removed');
-      }
-      return;
-    }
+  document.getElementById('select-currency')?.addEventListener('change', async (e) => {
+    await stateManager.updateTripInfo({ currency: e.target.value });
+    showToast(`Currency updated to ${e.target.value}`);
   });
 
   // Save Renamed Member
@@ -756,36 +392,298 @@ function setupEventListeners() {
     closeModal('modal-rename-member');
     try {
       await stateManager.renameMember(memberId, newName);
-      renderApp();
-      showToast(`Traveler renamed to ${newName}`);
+      showToast(`Renamed to ${newName}`);
     } catch (err) {
       showToast('Failed to rename: ' + (err.message || ''));
     }
   });
 
-  // Settings: Add Planned Friend (Placeholder to avoid dual entry)
+  // Add Friend in Settings
   document.getElementById('form-settings-add-placeholder')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const input = document.getElementById('input-settings-friend-name');
-    const name = (input.value || '').trim();
+    const name = (input?.value || '').trim();
     if (!name) return;
     input.value = '';
     try {
       await stateManager.addMember(name);
-      renderApp();
-      showToast(`Planned friend added: ${name}`);
+      showToast(`Friend added: ${name}`);
     } catch (err) {
       showToast('Could not add friend: ' + (err.message || ''));
     }
   });
 
-  // Route Speed Change
+  // 12. Google Sheets Mirror & CSV Backup
+  document.getElementById('btn-save-sheet-url')?.addEventListener('click', () => {
+    const url = document.getElementById('input-google-sheet-url').value.trim();
+    stateManager.updateGoogleSheetUrl(url);
+    if (url) {
+      showToast('Syncing with Google Sheet...');
+      pushToGoogleSheet(stateManager.state, true).then(res => {
+        showToast(res.success ? 'Synced to Google Sheet!' : `Sheet notice: ${res.error || 'Check URL'}`);
+      });
+    } else {
+      showToast('Google Sheet URL cleared');
+    }
+  });
+
+  document.getElementById('btn-manual-sync-now')?.addEventListener('click', () => {
+    showToast('Pushing to Google Sheet...');
+    pushToGoogleSheet(stateManager.state, true).then(res => {
+      showToast(res.success ? 'Google Sheet updated!' : `Sync error: ${res.error || 'Add URL first'}`);
+    });
+  });
+
+  document.getElementById('btn-view-apps-script-guide')?.addEventListener('click', () => {
+    document.getElementById('code-apps-script-box').value = APPS_SCRIPT_CODE;
+    openModal('modal-apps-script-guide');
+  });
+
+  document.getElementById('btn-copy-apps-script')?.addEventListener('click', () => {
+    navigator.clipboard.writeText(APPS_SCRIPT_CODE).then(() => {
+      showToast('Apps Script copied!');
+    });
+  });
+
+  document.getElementById('btn-export-csv')?.addEventListener('click', () => {
+    exportToCSV(stateManager.state);
+    showToast('CSV exported');
+  });
+
+  document.getElementById('btn-download-backup')?.addEventListener('click', () => {
+    downloadBackupJSON(stateManager.state);
+    showToast('JSON backup saved');
+  });
+
+  // 13. Logout
+  document.getElementById('btn-header-logout')?.addEventListener('click', async () => {
+    if (confirm('Log out from Upmark Curve?')) {
+      stateManager.destroy?.();
+      await supabaseSignOut();
+      window.location.href = './login.html';
+    }
+  });
+
+  // 14. Share Trip Invite Links & Codes (Clean Gen-Z Professional Copy)
+  document.getElementById('btn-header-share-trip')?.addEventListener('click', openShareTripModal);
+  document.getElementById('btn-settings-share-link')?.addEventListener('click', openShareTripModal);
+
+  document.getElementById('btn-copy-share-link')?.addEventListener('click', () => {
+    const link = document.getElementById('input-share-link').value;
+    navigator.clipboard.writeText(link).then(() => showToast('Trip link copied!'));
+  });
+
+  document.getElementById('btn-copy-code-box')?.addEventListener('click', () => {
+    const code = stateManager.state.inviteCode || '';
+    if (code) {
+      navigator.clipboard.writeText(code).then(() => showToast(`Invite code ${code} copied!`));
+    }
+  });
+
+  const buildCleanInviteMessage = () => {
+    const state = stateManager.state;
+    const link = `${window.location.origin}/index.html?trip=${state.tripId || ''}`;
+    return `Join our trip "${state.tripName}" on Upmark Curve (The Trip Hisab)!\n\n` +
+      `Track group bills, split expenses, chat live, and plan our route together:\n` +
+      `Direct Link: ${link}\n` +
+      `Invite Code: ${state.inviteCode || ''}`;
+  };
+
+  document.getElementById('btn-copy-full-invite')?.addEventListener('click', () => {
+    navigator.clipboard.writeText(buildCleanInviteMessage()).then(() => {
+      showToast('Invite message copied!');
+    });
+  });
+
+  document.getElementById('btn-share-whatsapp-invite')?.addEventListener('click', () => {
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(buildCleanInviteMessage())}`, '_blank');
+  });
+
+  document.getElementById('btn-dash-copy-link')?.addEventListener('click', () => {
+    const link = document.getElementById('dash-share-url-input')?.value || `${window.location.origin}/index.html?trip=${stateManager.state.tripId || ''}`;
+    navigator.clipboard.writeText(link).then(() => showToast('Invite link copied!'));
+  });
+
+  document.getElementById('btn-dash-share-whatsapp')?.addEventListener('click', () => {
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(buildCleanInviteMessage())}`, '_blank');
+  });
+
+  // 15. Trip Live Chat
+  document.getElementById('form-chat-send')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('input-chat-message');
+    const text = (input?.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    try {
+      await stateManager.sendMessage(text);
+    } catch (err) {
+      showToast('Failed to send message: ' + (err.message || ''));
+    }
+  });
+
+  // 16. Route & Multi-Destination Map
+  document.getElementById('btn-open-add-stop')?.addEventListener('click', () => {
+    document.getElementById('form-add-stop')?.reset();
+    const resBox = document.getElementById('modal-place-search-results');
+    if (resBox) resBox.style.display = 'none';
+    openModal('modal-add-stop');
+    setTimeout(() => document.getElementById('input-stop-name')?.focus(), 60);
+  });
+
+  // Preset city chips inside modal
+  document.querySelectorAll('#preset-cities-chips .chip-preset').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('input-stop-name').value = chip.dataset.name;
+      document.getElementById('input-stop-lat').value = chip.dataset.lat;
+      document.getElementById('input-stop-lng').value = chip.dataset.lng;
+    });
+  });
+
+  // Live Geocoding Search inside Add Stop Modal
+  document.getElementById('btn-search-place-modal')?.addEventListener('click', async () => {
+    const q = document.getElementById('input-stop-name')?.value.trim();
+    const resultsBox = document.getElementById('modal-place-search-results');
+    if (!q || !resultsBox) return;
+
+    resultsBox.style.display = 'block';
+    resultsBox.innerHTML = `<div class="route-search-item">Searching OpenStreetMap for "${q}"...</div>`;
+    const places = await searchPlacesNominatim(q);
+
+    if (places.length === 0) {
+      resultsBox.innerHTML = `<div class="route-search-item">No exact coordinates found. Try adding city or state name.</div>`;
+      return;
+    }
+
+    // Auto-fill the top match immediately
+    document.getElementById('input-stop-lat').value = parseFloat(places[0].lat).toFixed(5);
+    document.getElementById('input-stop-lng').value = parseFloat(places[0].lon).toFixed(5);
+
+    resultsBox.innerHTML = places.map(p => {
+      const shortName = (p.display_name || '').split(',').slice(0, 2).join(', ');
+      return `
+        <div class="route-search-item" data-name="${shortName.replace(/"/g, '&quot;')}" data-lat="${parseFloat(p.lat).toFixed(5)}" data-lng="${parseFloat(p.lon).toFixed(5)}">
+          <strong>${shortName}</strong>
+          <span>${p.display_name}</span>
+        </div>
+      `;
+    }).join('');
+
+    resultsBox.querySelectorAll('.route-search-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (!item.dataset.lat) return;
+        document.getElementById('input-stop-name').value = item.dataset.name;
+        document.getElementById('input-stop-lat').value = item.dataset.lat;
+        document.getElementById('input-stop-lng').value = item.dataset.lng;
+        resultsBox.style.display = 'none';
+      });
+    });
+  });
+
+  // Inline Route Search Bar right above the Map
+  const handleInlinePlaceSearch = async () => {
+    const input = document.getElementById('inline-route-search-input');
+    const resultsBox = document.getElementById('inline-route-search-results');
+    const q = (input?.value || '').trim();
+    if (!q || !resultsBox) return;
+
+    resultsBox.style.display = 'block';
+    resultsBox.innerHTML = `<div class="route-search-item">Searching "${q}"...</div>`;
+    const places = await searchPlacesNominatim(q);
+
+    if (places.length === 0) {
+      resultsBox.innerHTML = `<div class="route-search-item">No places found for "${q}". Try another landmark or city.</div>`;
+      return;
+    }
+
+    resultsBox.innerHTML = places.map(p => {
+      const shortName = (p.display_name || '').split(',').slice(0, 2).join(', ');
+      return `
+        <div class="route-search-item" data-name="${shortName.replace(/"/g, '&quot;')}" data-lat="${parseFloat(p.lat).toFixed(5)}" data-lng="${parseFloat(p.lon).toFixed(5)}">
+          <div>
+            <strong>+ Add Stop: ${shortName}</strong>
+            <span>${p.display_name}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    resultsBox.querySelectorAll('.route-search-item').forEach(item => {
+      item.addEventListener('click', async () => {
+        if (!item.dataset.lat) return;
+        const name = item.dataset.name;
+        const lat = parseFloat(item.dataset.lat);
+        const lng = parseFloat(item.dataset.lng);
+        resultsBox.style.display = 'none';
+        input.value = '';
+        showToast(`Adding ${name} to route...`);
+        await stateManager.addDestination({ name, lat, lng, stayNotes: '' });
+        showToast(`Added stop: ${name}`);
+      });
+    });
+  };
+
+  document.getElementById('btn-inline-route-search')?.addEventListener('click', handleInlinePlaceSearch);
+  document.getElementById('inline-route-search-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleInlinePlaceSearch();
+    }
+  });
+
+  // Submit Add Stop Modal (auto-geocodes if lat/lng are empty!)
+  document.getElementById('form-add-stop')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('input-stop-name').value.trim();
+    let lat = parseFloat(document.getElementById('input-stop-lat').value) || 0;
+    let lng = parseFloat(document.getElementById('input-stop-lng').value) || 0;
+    const stayNotes = document.getElementById('input-stop-notes').value.trim();
+
+    closeModal('modal-add-stop');
+    showToast(`Adding ${name}...`);
+
+    // Auto-geocode if user typed a city name without coordinates
+    if (!lat && !lng && name) {
+      const matches = await searchPlacesNominatim(name);
+      if (matches.length > 0) {
+        lat = parseFloat(matches[0].lat) || 0;
+        lng = parseFloat(matches[0].lon) || 0;
+      }
+    }
+
+    try {
+      await stateManager.addDestination({ name, lat, lng, stayNotes });
+      showToast(`Stop added: ${name}`);
+    } catch (err) {
+      showToast('Failed to add stop: ' + (err.message || ''));
+    }
+  });
+
+  // Open Full Multi-Destination Route in Google Maps
+  document.getElementById('btn-open-google-maps-route')?.addEventListener('click', () => {
+    const stops = stateManager.state.destinations || [];
+    if (stops.length === 0) {
+      showToast('Add at least 1 destination stop first!');
+      return;
+    }
+    const waypoints = stops.map(s => {
+      if (parseFloat(s.lat) && parseFloat(s.lng)) {
+        return `${s.lat},${s.lng}`;
+      }
+      return encodeURIComponent(s.name);
+    });
+    const url = `https://www.google.com/maps/dir/${waypoints.join('/')}`;
+    window.open(url, '_blank');
+  });
+
   document.getElementById('route-transit-speed')?.addEventListener('change', () => {
+    renderRouteView(stateManager.state);
+  });
+  document.getElementById('route-departure-time')?.addEventListener('change', () => {
     renderRouteView(stateManager.state);
   });
 }
 
-// --- Auth State Management (Connected to Supabase User) ---
 export function getActiveUser() {
   if (stateManager.currentMember) {
     return {
@@ -800,21 +698,13 @@ export function getActiveUser() {
     const name = stateManager.currentUser.user_metadata?.display_name || stateManager.currentUser.email?.split('@')[0] || 'Traveler';
     return {
       id: stateManager.currentUser.id,
-      name: name,
+      name,
       avatar: name.charAt(0).toUpperCase(),
       role: 'admin',
       color: '#0066FF'
     };
   }
   return null;
-}
-
-function setActiveUser(user) {
-  updateHeaderUserBadge(user);
-}
-
-function clearActiveUser() {
-  updateHeaderUserBadge(null);
 }
 
 function updateHeaderUserBadge(user) {
@@ -825,110 +715,44 @@ function updateHeaderUserBadge(user) {
 
   if (user) {
     badge.style.display = 'inline-flex';
-    nameEl.textContent = user.name;
-    avatarEl.textContent = user.avatar || user.name.charAt(0).toUpperCase();
-    if (user.color) avatarEl.style.background = user.color;
+    if (nameEl) nameEl.textContent = user.name;
+    if (avatarEl) {
+      avatarEl.textContent = user.avatar || user.name.charAt(0).toUpperCase();
+      if (user.color) avatarEl.style.background = user.color;
+    }
   } else {
     badge.style.display = 'none';
   }
 }
 
-function checkAuthAndGate() {
-  const gate = document.getElementById('login-gate-screen');
-  // With Supabase auth, users are already authenticated!
-  // Always hide legacy gate screen and show the user badge.
-  if (gate) {
-    gate.style.display = 'none';
-  }
-  const activeUser = getActiveUser();
-  if (activeUser) {
-    updateHeaderUserBadge(activeUser);
-  }
-  return true;
-}
-
-// --- Share Trip Modal ---
 function openShareTripModal() {
   const state = stateManager.state;
-  // Share the direct trip link with trip ID
   const tripId = state.tripId || new URLSearchParams(window.location.search).get('trip') || '';
   const inviteCode = state.inviteCode || '';
-  const baseUrl = window.location.origin + window.location.pathname;
-  const shareUrl = `${baseUrl}?trip=${tripId}`;
+  const shareUrl = `${window.location.origin}/index.html?trip=${tripId}`;
 
-  document.getElementById('input-share-link').value = shareUrl;
-  // Show invite code in the pin area
-  document.getElementById('share-modal-pin').textContent = inviteCode || '------';
+  const linkInput = document.getElementById('input-share-link');
+  if (linkInput) linkInput.value = shareUrl;
+
+  const pinEl = document.getElementById('share-modal-pin');
+  if (pinEl) pinEl.textContent = inviteCode || '------';
 
   openModal('modal-share-trip');
 }
 
-// --- Shared URL Parameters Handling --- (handled by auth guard at top)
-async function handleSharedUrlParams() {
-  // Trip ID is read from ?trip= param at the top auth guard.
-  // No additional handling needed here.
-}
-
-// --- Live Background Monitoring Across Group ---
-function startLiveMonitoring() {
-  // Pull latest updates from Google Sheet every 25 seconds
-  setInterval(async () => {
-    const sheetUrl = stateManager.state.settings?.googleSheetUrl;
-    if (!sheetUrl || document.visibilityState !== 'visible') return;
-    try {
-      const remote = await pullFromGoogleSheet(sheetUrl);
-      if (remote && remote.expenses) {
-        const localExpCount = stateManager.state.expenses?.length || 0;
-        const remoteExpCount = remote.expenses?.length || 0;
-        const localKittyBal = stateManager.state.kitty?.balance || 0;
-        const remoteKittyBal = remote.kitty?.balance || 0;
-
-        if (localExpCount !== remoteExpCount || Math.abs(localKittyBal - remoteKittyBal) > 0.01) {
-          stateManager.importBackup(JSON.stringify(remote), false);
-          renderApp();
-          showToast('Updated latest trip expenses from group');
-        }
-      }
-    } catch (e) {
-      // Background check error ignored
-    }
-  }, 25000);
-
-  // Refresh when user returns to browser tab
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible' && stateManager.state.settings?.googleSheetUrl) {
-      try {
-        const remote = await pullFromGoogleSheet(stateManager.state.settings.googleSheetUrl);
-        if (remote && remote.expenses) {
-          const localExpCount = stateManager.state.expenses?.length || 0;
-          const remoteExpCount = remote.expenses?.length || 0;
-          if (localExpCount !== remoteExpCount) {
-            stateManager.importBackup(JSON.stringify(remote), false);
-            renderApp();
-          }
-        }
-      } catch (e) {}
-    }
-  });
-}
-
-function openKittyActionModal(type, editItem = null) {
+function openKittyActionModal(type) {
   const state = stateManager.state;
   document.getElementById('kitty-action-type').value = type;
-  document.getElementById('kitty-edit-id').value = editItem ? editItem.id : '';
+  document.getElementById('kitty-edit-id').value = '';
   const title = document.getElementById('modal-kitty-title');
   const amountLabel = document.getElementById('label-kitty-amount');
   const memberGroup = document.getElementById('group-kitty-member');
   const memberSelect = document.getElementById('select-kitty-member');
-  const typeSelectGroup = document.getElementById('group-kitty-type-select');
-  const typeSelect = document.getElementById('select-kitty-type');
-  const submitBtn = document.getElementById('btn-save-kitty-action');
   const dateInput = document.getElementById('input-kitty-date');
   const noteInput = document.getElementById('input-kitty-note');
   const amountInput = document.getElementById('input-kitty-amount');
   const hintEl = document.getElementById('hint-kitty-amount');
 
-  // Populate Member choices
   memberSelect.innerHTML = `<option value="ALL">All ${state.members.length} Friends (Equal contribution each)</option>`;
   state.members.forEach(m => {
     const opt = document.createElement('option');
@@ -938,19 +762,14 @@ function openKittyActionModal(type, editItem = null) {
   });
   const poolOpt = document.createElement('option');
   poolOpt.value = 'POOL';
-  poolOpt.textContent = 'Emergency / Cash (Common use)';
+  poolOpt.textContent = 'Common Pool / Cash';
   memberSelect.appendChild(poolOpt);
 
   const updateHint = () => {
-    const currentType = editItem ? typeSelect.value : type;
     const selectedMember = memberSelect.value;
     const amt = parseFloat(amountInput.value) || 0;
-    if (currentType === 'DEPOSIT' && selectedMember === 'ALL' && state.members.length > 0) {
-      if (editItem) {
-        hintEl.textContent = `Total pool deposit: ${state.currency}${amt} (${state.currency}${Math.round(amt / state.members.length)} per member)`;
-      } else {
-        hintEl.textContent = `Entering ${state.currency}${amt || 0} adds ${state.currency}${(amt * state.members.length).toLocaleString()} to pool (${state.currency}${amt || 0} × ${state.members.length} friends)`;
-      }
+    if (type === 'DEPOSIT' && selectedMember === 'ALL' && state.members.length > 0) {
+      hintEl.textContent = `Entering ${state.currency}${amt || 0} adds ${state.currency}${(amt * state.members.length).toLocaleString()} total (${state.currency}${amt || 0} × ${state.members.length} friends)`;
     } else {
       hintEl.textContent = '';
     }
@@ -959,54 +778,25 @@ function openKittyActionModal(type, editItem = null) {
   amountInput.oninput = updateHint;
   memberSelect.onchange = updateHint;
 
-  if (editItem) {
-    title.textContent = 'Edit Pool Transaction';
-    submitBtn.textContent = 'Save Changes';
-    typeSelectGroup.style.display = 'block';
-    typeSelect.value = editItem.type;
-    amountInput.value = editItem.amount;
-    dateInput.value = editItem.date || new Date().toISOString().slice(0, 10);
-    noteInput.value = editItem.note || '';
-    if (editItem.memberId) {
-      memberSelect.value = editItem.memberId;
-    }
-    amountLabel.innerHTML = `Amount (<span class="currency-label">${state.currency}</span>)`;
-    memberGroup.style.display = (editItem.type === 'ADJUST') ? 'none' : 'block';
+  dateInput.value = new Date().toISOString().slice(0, 10);
+  noteInput.value = '';
+  amountInput.value = '';
 
-    typeSelect.onchange = (e) => {
-      const selectedType = e.target.value;
-      if (selectedType === 'ADJUST') {
-        memberGroup.style.display = 'none';
-        amountLabel.innerHTML = `Set New Balance (<span class="currency-label">${state.currency}</span>)`;
-      } else {
-        memberGroup.style.display = 'block';
-        amountLabel.innerHTML = `${selectedType === 'DEPOSIT' ? 'Deposit' : 'Withdraw'} Amount (<span class="currency-label">${state.currency}</span>)`;
-      }
-      updateHint();
-    };
-  } else {
-    submitBtn.textContent = 'Confirm';
-    typeSelectGroup.style.display = 'none';
-    dateInput.value = new Date().toISOString().slice(0, 10);
-    noteInput.value = '';
-    amountInput.value = '';
-
-    if (type === 'DEPOSIT') {
-      title.textContent = 'Add Money to Group Pool (Kitty)';
-      amountLabel.innerHTML = `Deposit Amount (<span class="currency-label">${state.currency}</span>)`;
-      memberGroup.style.display = 'block';
-      memberSelect.value = 'ALL';
-    } else if (type === 'WITHDRAW') {
-      title.textContent = 'Withdraw Cash from Pool (Kitty)';
-      amountLabel.innerHTML = `Withdraw Amount (<span class="currency-label">${state.currency}</span>)`;
-      memberGroup.style.display = 'block';
-      memberSelect.value = 'POOL';
-    } else if (type === 'MODIFY') {
-      title.textContent = 'Adjust Pool Balance Directly';
-      amountLabel.innerHTML = `Set New Balance (<span class="currency-label">${state.currency}</span>)`;
-      amountInput.value = state.kitty.balance;
-      memberGroup.style.display = 'none';
-    }
+  if (type === 'DEPOSIT') {
+    title.textContent = 'Deposit Money to Group Kitty';
+    amountLabel.innerHTML = `Amount per person / deposit (<span class="currency-label">${state.currency}</span>)`;
+    memberGroup.style.display = 'block';
+    memberSelect.value = 'ALL';
+  } else if (type === 'WITHDRAW') {
+    title.textContent = 'Withdraw Cash from Kitty';
+    amountLabel.innerHTML = `Withdraw Amount (<span class="currency-label">${state.currency}</span>)`;
+    memberGroup.style.display = 'block';
+    memberSelect.value = 'POOL';
+  } else if (type === 'MODIFY') {
+    title.textContent = 'Adjust Kitty Balance';
+    amountLabel.innerHTML = `New Kitty Balance (<span class="currency-label">${state.currency}</span>)`;
+    amountInput.value = state.kitty.balance;
+    memberGroup.style.display = 'none';
   }
 
   updateHint();
@@ -1053,12 +843,24 @@ function openNoteModal(noteToEdit = null) {
 
 // App Initialization
 async function init() {
+  // Mount 21st.dev Auckland Skyline Mosaic/ASCII effect in Trip Hero
+  const heroCanvas = document.getElementById('trip-hero-ascii');
+  if (heroCanvas) {
+    mountAucklandSkylineCanvas(heroCanvas);
+  }
+
   const params = new URLSearchParams(window.location.search);
   const tripId = params.get('trip');
 
   const user = await getUser();
   if (!user) {
-    window.location.href = './login.html';
+    // Save shared trip ID so after login/signup the user lands right back in this trip!
+    if (tripId) {
+      localStorage.setItem('upmark_pending_trip', tripId);
+      window.location.href = `./login.html?trip=${encodeURIComponent(tripId)}`;
+    } else {
+      window.location.href = './login.html';
+    }
     return;
   }
 
@@ -1073,31 +875,19 @@ async function init() {
     await stateManager.init(tripId);
   } catch (err) {
     console.error('Failed to load trip:', err);
-    alert('Could not load trip. Redirecting to your trips list.');
     window.location.href = './trips.html';
     return;
   }
 
-  // Connect Google Sheet debounced auto-sync
-  stateManager.onAutoSync = (s) => pushToGoogleSheet(s, false);
-
-  // Check if link was shared with ?sheet=
-  await handleSharedUrlParams();
-
-  // Re-render whenever state changes
   stateManager.subscribe(() => {
     renderApp();
     const active = getActiveUser();
     if (active) updateHeaderUserBadge(active);
   });
 
-  // Initial render
   renderApp();
   const active = getActiveUser();
   if (active) updateHeaderUserBadge(active);
-
-  // Start live background monitoring across group
-  startLiveMonitoring();
 }
 
 init();
