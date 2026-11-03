@@ -12,6 +12,29 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── AUTH HELPERS ──────────────────────────────────────────────────────────────
 
+/** Send a 6-digit OTP code to the user's email */
+export async function sendOtp(email) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true
+    }
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Verify 6-digit OTP code */
+export async function verifyOtp(email, token) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
+  if (error) throw error;
+  return data;
+}
+
 /** Sign up a new user with email + password */
 export async function signUp(email, password, displayName) {
   const { data, error } = await supabase.auth.signUp({
