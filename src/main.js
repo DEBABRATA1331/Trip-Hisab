@@ -2,7 +2,36 @@
 // TRIP HISAB - MAIN CONTROLLER & APPLICATION ENTRY POINT (NO EMOJIS, NO FAKE DATA)
 // =========================================================================
 
-import { stateManager } from './state.js';
+// ─── SUPABASE AUTH GUARD ──────────────────────────────────────────────────────
+// If no trip ID in URL, redirect to trips list. If not logged in, redirect to login.
+import { getUser, signOut as supabaseSignOut } from './supabase.js';
+import { stateManager } from './db-state.js';
+
+(async function authGuard() {
+  const params = new URLSearchParams(window.location.search);
+  const tripId = params.get('trip');
+
+  const user = await getUser();
+  if (!user) {
+    window.location.href = './login.html';
+    return;
+  }
+
+  if (!tripId) {
+    window.location.href = './trips.html';
+    return;
+  }
+
+  // Initialize DB state manager with this trip
+  try {
+    await stateManager.init(tripId);
+  } catch (err) {
+    console.error('Failed to load trip:', err);
+    alert('Could not load trip. Redirecting to your trips list.');
+    window.location.href = './trips.html';
+    return;
+  }
+})();
 import {
   renderApp,
   showToast,
@@ -711,13 +740,14 @@ function setupEventListeners() {
     });
   }
 
-  // Header Logout Button
+  // Header Logout Button — now uses Supabase signOut
   const btnLogout = document.getElementById('btn-header-logout');
   if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
+    btnLogout.addEventListener('click', async () => {
       if (confirm('Log out from Trip Hisab?')) {
-        clearActiveUser();
-        checkAuthAndGate();
+        stateManager.destroy?.();
+        await supabaseSignOut();
+        window.location.href = './login.html';
       }
     });
   }
@@ -858,46 +888,23 @@ function checkAuthAndGate() {
 // --- Share Trip Modal ---
 function openShareTripModal() {
   const state = stateManager.state;
+  // Share the direct trip link with trip ID
+  const tripId = state.tripId || new URLSearchParams(window.location.search).get('trip') || '';
+  const inviteCode = state.inviteCode || '';
   const baseUrl = window.location.origin + window.location.pathname;
-  const sheetUrl = state.settings?.googleSheetUrl || '';
-  const groupPin = state.security?.groupPin || '1234';
-
-  // Make sure Google Sheet has the freshest members and calculated totals right now
-  if (sheetUrl) {
-    pushToGoogleSheet(state, false).catch(e => console.warn('Sync on share modal:', e));
-  }
-
-  // If Google Sheet is connected, append sheet URL to share link
-  const shareUrl = sheetUrl
-    ? `${baseUrl}?sheet=${encodeURIComponent(sheetUrl)}`
-    : baseUrl;
+  const shareUrl = `${baseUrl}?trip=${tripId}`;
 
   document.getElementById('input-share-link').value = shareUrl;
-  document.getElementById('share-modal-pin').textContent = groupPin;
+  // Show invite code in the pin area
+  document.getElementById('share-modal-pin').textContent = inviteCode || '------';
 
   openModal('modal-share-trip');
 }
 
-// --- Shared URL Parameters Handling ---
+// --- Shared URL Parameters Handling --- (handled by auth guard at top)
 async function handleSharedUrlParams() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const sheetParam = urlParams.get('sheet') || urlParams.get('sync');
-  if (sheetParam) {
-    stateManager.updateGoogleSheetUrl(sheetParam);
-    showToast('Connecting to group trip data...');
-    try {
-      const remoteData = await pullFromGoogleSheet(sheetParam);
-      if (remoteData && remoteData.members) {
-        stateManager.importBackup(JSON.stringify(remoteData), false);
-        showToast('Connected! Group hisab loaded.');
-        window.history.replaceState({}, document.title, window.location.pathname);
-        renderApp();
-        checkAuthAndGate();
-      }
-    } catch (err) {
-      console.warn('Error fetching shared trip sheet:', err);
-    }
-  }
+  // Trip ID is read from ?trip= param at the top auth guard.
+  // No additional handling needed here.
 }
 
 // --- Live Background Monitoring Across Group ---

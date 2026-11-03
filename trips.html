@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trip Hisab - My Trips</title>
+  <link rel="stylesheet" href="./src/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%230066FF%22 stroke-width=%222%22><path d=%22M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z%22/></svg>">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; background: #F0F4F8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .top-bar { background: #0F172A; color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .top-bar-brand { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; }
+    .top-bar-brand span { color: #60A5FA; }
+    .user-info { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: #0066FF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+    .btn-logout-top { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; }
+    .btn-logout-top:hover { background: rgba(255,255,255,0.2); }
+    .main { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
+    .section-title { font-size: 1.2rem; font-weight: 800; color: #0F172A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .trip-card { background: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; border: 1.5px solid #E2E8F0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .trip-card:hover { border-color: #0066FF; box-shadow: 0 4px 16px rgba(0,102,255,0.12); transform: translateY(-1px); }
+    .trip-card-left { display: flex; align-items: center; gap: 14px; }
+    .trip-icon { width: 46px; height: 46px; background: linear-gradient(135deg, #0066FF, #0284C7); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .trip-name { font-size: 1rem; font-weight: 700; color: #0F172A; }
+    .trip-meta { font-size: 0.78rem; color: #64748B; margin-top: 3px; }
+    .trip-role-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #EFF6FF; color: #0066FF; }
+    .trip-role-badge.admin { background: #0066FF; color: #fff; }
+    .arrow-icon { color: #CBD5E1; font-size: 1.2rem; }
+    .empty-state { text-align: center; padding: 48px 20px; color: #94A3B8; }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; }
+    .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .action-card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 18px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .action-card:hover { border-color: #0066FF; box-shadow: 0 4px 14px rgba(0,102,255,0.12); }
+    .action-card.primary { background: #0066FF; border-color: #0066FF; color: #fff; }
+    .action-card .ac-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .action-card .ac-title { font-size: 0.9rem; font-weight: 700; }
+    .action-card .ac-sub { font-size: 0.75rem; margin-top: 4px; opacity: 0.7; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 400px; }
+    .modal-box h2 { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin-bottom: 18px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 10px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-size: 0.92rem; color: #0F172A; background: #F8FAFC; outline: none; }
+    input:focus, select:focus { border-color: #0066FF; background: #fff; }
+    .btn-row { display: flex; gap: 10px; margin-top: 18px; }
+    .btn { padding: 11px 18px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; border: none; flex: 1; transition: all 0.2s; }
+    .btn-blue { background: #0066FF; color: #fff; }
+    .btn-blue:hover { background: #0052CC; }
+    .btn-blue:disabled { background: #93C5FD; cursor: not-allowed; }
+    .btn-ghost { background: #F1F5F9; color: #334155; }
+    .btn-ghost:hover { background: #E2E8F0; }
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.83rem; margin-bottom: 12px; }
+    .alert-error { background: #FEE2E2; color: #B91C1C; }
+    .alert-success { background: #D1FAE5; color: #065F46; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 5px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .invite-code-display { background: #EFF6FF; border: 2px dashed #93C5FD; border-radius: 10px; padding: 14px; text-align: center; margin: 12px 0; }
+    .invite-code-display code { font-size: 2rem; font-weight: 900; letter-spacing: 6px; color: #0066FF; }
+    .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 60vh; flex-direction: column; gap: 12px; color: #64748B; }
+    .loading-dot { width: 10px; height: 10px; border-radius: 50%; background: #0066FF; animation: pulse 1s ease-in-out infinite; display: inline-block; margin: 0 3px; }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-brand">Trip <span>Hisab</span></div>
+    <div class="user-info">
+      <div class="avatar" id="user-avatar">?</div>
+      <span id="user-name-display">Loading...</span>
+      <button class="btn-logout-top" id="btn-logout">Log Out</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Loading -->
+    <div class="loading-screen" id="loading-screen">
+      <div>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </div>
+      <span>Loading your trips...</span>
+    </div>
+
+    <!-- Content (shown after load) -->
+    <div id="main-content" style="display:none;">
+
+      <!-- Quick Actions -->
+      <div class="section-title">
+        ✈️ Your Trips
+      </div>
+      <div class="action-cards">
+        <div class="action-card primary" id="btn-new-trip">
+          <div class="ac-icon">➕</div>
+          <div class="ac-title">New Trip</div>
+          <div class="ac-sub">Create & invite friends</div>
+        </div>
+        <div class="action-card" id="btn-join-trip">
+          <div class="ac-icon">🔗</div>
+          <div class="ac-title">Join a Trip</div>
+          <div class="ac-sub">Enter invite code</div>
+        </div>
+      </div>
+
+      <!-- Trips List -->
+      <div id="trips-list">
+        <div class="empty-state">
+          <div class="empty-icon">🗺️</div>
+          <p>No trips yet!<br>Create a new trip or join one with an invite code.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Create New Trip -->
+  <div class="modal-overlay" id="modal-new-trip">
+    <div class="modal-box">
+      <h2>✈️ Create New Trip</h2>
+      <div id="new-trip-alert" class="alert" style="display:none;"></div>
+      <form id="form-new-trip">
+        <div class="form-group">
+          <label>Trip Name</label>
+          <input type="text" id="new-trip-name" placeholder="e.g. Goa 2026, Manali Trip..." required>
+        </div>
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="new-trip-currency">
+            <option value="₹">₹ INR (Indian Rupee)</option>
+            <option value="$">$ USD</option>
+            <option value="€">€ EUR</option>
+            <option value="£">£ GBP</option>
+            <option value="AED">AED (Dirhams)</option>
+            <option value="THB">THB (Thai Baht)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Total Budget (optional)</label>
+          <input type="number" id="new-trip-budget" placeholder="e.g. 50000" min="0">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-ghost" id="btn-cancel-new-trip">Cancel</button>
+          <button type="submit" class="btn btn-blue" id="btn-create-trip">Create Trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Join Trip -->
+  <div class="modal-overlay" id="modal-join-trip">
+    <div class="modal-box">
+      <h2>🔗 Join a Trip</h2>
+      <div id="join-trip-alert" class="alert" style="display:none;"></div>
+      <form id="form-join-trip">
+        <div class="form-group">
+          <label>Invite Code (6 characters)</label>
+          <input type="text" id="join-invite-code" placeholder="e.g. ABC123" maxlength="6" style="font-size:1.4rem; font-weight:800; letter-spacing:6px; text-transform:uppercase; text-align:center;" required>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-ghost" id="btn-cancel-join-trip">Cancel</button>
+          <button type="submit" class="btn btn-blue" id="btn-join-trip-submit">Join Trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Trip Created - Share Invite Code -->
+  <div class="modal-overlay" id="modal-invite-code">
+    <div class="modal-box" style="text-align:center;">
+      <h2>🎉 Trip Created!</h2>
+      <p style="font-size:0.85rem; color:#64748B; margin-bottom:14px;">Share this invite code with your friends so they can join:</p>
+      <div class="invite-code-display">
+        <code id="display-invite-code">------</code>
+      </div>
+      <p style="font-size:0.8rem; color:#94A3B8; margin: 10px 0 18px;">Friends go to <strong>upmarkcurve.in</strong>, sign up, then click "Join a Trip" and enter this code.</p>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btn-copy-invite">📋 Copy Code</button>
+        <button class="btn btn-blue" id="btn-share-whatsapp">💬 WhatsApp</button>
+      </div>
+      <button class="btn btn-ghost" id="btn-goto-trip" style="margin-top:10px; width:100%;">Open Trip →</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getUser, getMyTrips, createTrip, joinTripByCode, signOut } from './src/supabase.js';
+
+    let currentUser = null;
+    let currentTrips = [];
+    let newlyCreatedTripId = null;
+
+    // Auth guard
+    async function init() {
+      currentUser = await getUser();
+      if (!currentUser) {
+        window.location.href = './login.html';
+        return;
+      }
+
+      const name = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
+      document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('user-name-display').textContent = name;
+
+      await loadTrips();
+    }
+
+    async function loadTrips() {
+      try {
+        currentTrips = await getMyTrips();
+        renderTrips(currentTrips);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+      }
+    }
+
+    function renderTrips(trips) {
+      const container = document.getElementById('trips-list');
+      if (!trips.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">🗺️</div><p>No trips yet!<br>Create a new trip or join one with an invite code.</p></div>`;
+        return;
+      }
+      container.innerHTML = trips.map(trip => `
+        <div class="trip-card" data-id="${trip.id}">
+          <div class="trip-card-left">
+            <div class="trip-icon">✈️</div>
+            <div>
+              <div class="trip-name">${escHtml(trip.name)}</div>
+              <div class="trip-meta">Code: <strong>${trip.invite_code}</strong> · ${trip.currency}</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="trip-role-badge ${trip.myRole === 'admin' ? 'admin' : ''}">${trip.myRole === 'admin' ? 'Admin' : 'Member'}</span>
+            <span class="arrow-icon">›</span>
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.trip-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const tripId = card.dataset.id;
+          window.location.href = `./index.html?trip=${tripId}`;
+        });
+      });
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // LOGOUT
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await signOut();
+      window.location.href = './login.html';
+    });
+
+    // OPEN/CLOSE MODALS
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.getElementById('btn-new-trip').addEventListener('click', () => openModal('modal-new-trip'));
+    document.getElementById('btn-cancel-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
+    document.getElementById('btn-join-trip').addEventListener('click', () => openModal('modal-join-trip'));
+    document.getElementById('btn-cancel-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
+
+    // CREATE TRIP
+    document.getElementById('form-new-trip').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertEl = document.getElementById('new-trip-alert');
+      alertEl.style.display = 'none';
+      const btn = document.getElementById('btn-create-trip');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span>Creating...`;
+      try {
+        const trip = await createTrip({
+          name: document.getElementById('new-trip-name').value.trim(),
+          currency: document.getElementById('new-trip-currency').value,
+          budget: parseFloat(document.getElementById('new-trip-budget').value) || 0
+        });
+        newlyCreatedTripId = trip.id;
+        closeModal('modal-new-trip');
+        document.getElementById('display-invite-code').textContent = trip.invite_code;
+        openModal('modal-invite-code');
+        document.getElementById('form-new-trip').reset();
+        await loadTrips();
+      } catch (err) {
+        alertEl.className = 'alert alert-error';
+        alertEl.textContent = err.message || 'Failed to create trip.';
+        alertEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Create Trip';
+      }
+    });
+
+    // JOIN TRIP
+    document.getElementById('form-join-trip').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertEl = document.getElementById('join-trip-alert');
+      alertEl.style.display = 'none';
+      const btn = document.getElementById('btn-join-trip-submit');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span>Joining...`;
+      try {
+        const code = document.getElementById('join-invite-code').value.trim();
+        const name = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
+        const { trip, alreadyMember } = await joinTripByCode(code, name);
+        closeModal('modal-join-trip');
+        if (alreadyMember) {
+          window.location.href = `./index.html?trip=${trip.id}`;
+        } else {
+          await loadTrips();
+          alertEl.className = 'alert alert-success';
+          alertEl.textContent = `Joined "${trip.name}" successfully!`;
+          alertEl.style.display = 'block';
+        }
+        document.getElementById('form-join-trip').reset();
+      } catch (err) {
+        alertEl.className = 'alert alert-error';
+        alertEl.textContent = err.message || 'Failed to join trip.';
+        alertEl.style.display = 'block';
+        openModal('modal-join-trip');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Join Trip';
+      }
+    });
+
+    // INVITE CODE ACTIONS
+    document.getElementById('btn-copy-invite').addEventListener('click', () => {
+      const code = document.getElementById('display-invite-code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        document.getElementById('btn-copy-invite').textContent = '✅ Copied!';
+        setTimeout(() => document.getElementById('btn-copy-invite').textContent = '📋 Copy Code', 2000);
+      });
+    });
+
+    document.getElementById('btn-share-whatsapp').addEventListener('click', () => {
+      const code = document.getElementById('display-invite-code').textContent;
+      const msg = `Join our trip on Trip Hisab!\n1. Go to https://upmarkcurve.in\n2. Sign up / Log in\n3. Click "Join a Trip" and enter code: *${code}*\n\nLet's track expenses together! ✈️`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+    });
+
+    document.getElementById('btn-goto-trip').addEventListener('click', () => {
+      if (newlyCreatedTripId) window.location.href = `./index.html?trip=${newlyCreatedTripId}`;
+    });
+
+    init();
+  </script>
+</body>
+</html>
+

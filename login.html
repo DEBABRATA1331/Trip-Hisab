@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trip Hisab - Login</title>
+  <link rel="stylesheet" href="./src/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%230066FF%22 stroke-width=%222%22><path d=%22M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z%22/></svg>">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
+    .auth-card { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 420px; box-shadow: 0 25px 60px rgba(0,0,0,0.35); }
+    .auth-logo { text-align: center; margin-bottom: 24px; }
+    .auth-logo-icon { width: 60px; height: 60px; background: #0066FF; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; }
+    .auth-logo h1 { font-size: 1.5rem; font-weight: 800; color: #0F172A; }
+    .auth-logo p { font-size: 0.85rem; color: #64748B; margin-top: 4px; }
+    .tabs { display: flex; background: #F1F5F9; border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+    .tab-btn { flex: 1; padding: 9px; border: none; background: transparent; border-radius: 8px; font-size: 0.88rem; font-weight: 600; color: #64748B; cursor: pointer; transition: all 0.2s; }
+    .tab-btn.active { background: #fff; color: #0066FF; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px;
+      font-size: 0.95rem; color: #0F172A; background: #F8FAFC; outline: none; transition: border-color 0.2s;
+    }
+    input:focus { border-color: #0066FF; background: #fff; }
+    .btn-primary { width: 100%; padding: 13px; background: #0066FF; color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+    .btn-primary:hover { background: #0052CC; }
+    .btn-primary:disabled { background: #93C5FD; cursor: not-allowed; }
+    .btn-secondary { width: 100%; padding: 11px; background: transparent; color: #0066FF; border: 1.5px solid #0066FF; border-radius: 10px; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+    .btn-secondary:hover { background: #EFF6FF; }
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 14px; }
+    .alert-error { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
+    .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+    .divider { text-align: center; font-size: 0.78rem; color: #94A3B8; margin: 16px 0; position: relative; }
+    .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #E2E8F0; }
+    .divider span { background: #fff; padding: 0 10px; position: relative; }
+    .forgot-link { font-size: 0.8rem; color: #0066FF; cursor: pointer; text-align: right; display: block; margin-top: -8px; margin-bottom: 14px; }
+    .domain-badge { text-align: center; margin-top: 20px; font-size: 0.75rem; color: #94A3B8; }
+    .domain-badge strong { color: #0066FF; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">TH</div>
+      <h1>Trip Hisab</h1>
+      <p>Smart Group Expense Tracker</p>
+    </div>
+
+    <!-- Alert box -->
+    <div id="auth-alert" class="alert" style="display:none;"></div>
+
+    <!-- Tabs: Login / Sign Up -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="login">Log In</button>
+      <button class="tab-btn" data-tab="signup">Sign Up</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="tab-panel active" id="panel-login">
+      <form id="form-login">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+          <span class="forgot-link" id="forgot-link">Forgot password?</span>
+        </div>
+        <button type="submit" class="btn-primary" id="btn-login">Log In</button>
+      </form>
+
+      <div class="divider"><span>or</span></div>
+      <button class="btn-secondary" id="btn-goto-signup">Create New Account</button>
+    </div>
+
+    <!-- SIGNUP PANEL -->
+    <div class="tab-panel" id="panel-signup">
+      <form id="form-signup">
+        <div class="form-group">
+          <label for="signup-name">Your Name</label>
+          <input type="text" id="signup-name" placeholder="e.g. Debabrata, Rohan..." required>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password (min 6 chars)</label>
+          <input type="password" id="signup-password" placeholder="Create a strong password" required minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-primary" id="btn-signup">Create Account</button>
+      </form>
+    </div>
+
+    <div class="domain-badge">Powered by <strong>upmarkcurve.in</strong> · Free forever</div>
+  </div>
+
+  <script type="module">
+    import { signIn, signUp, getUser, resetPassword, onAuthChange } from './src/supabase.js';
+
+    // If already logged in, redirect to trips page
+    const user = await getUser();
+    if (user) { window.location.href = './trips.html'; }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn, .tab-panel').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+        hideAlert();
+      });
+    });
+
+    document.getElementById('btn-goto-signup')?.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn')[1].click();
+    });
+
+    function showAlert(msg, type = 'error') {
+      const el = document.getElementById('auth-alert');
+      el.className = `alert alert-${type}`;
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hideAlert() {
+      document.getElementById('auth-alert').style.display = 'none';
+    }
+
+    function setLoading(btnId, loading, text) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.innerHTML = loading ? `<span class="spinner"></span>Please wait...` : text;
+    }
+
+    // LOGIN
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      setLoading('btn-login', true, 'Log In');
+      try {
+        await signIn(email, password);
+        window.location.href = './trips.html';
+      } catch (err) {
+        showAlert(err.message || 'Login failed. Check your email and password.');
+        setLoading('btn-login', false, 'Log In');
+      }
+    });
+
+    // SIGNUP
+    document.getElementById('form-signup').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      if (!name) { showAlert('Please enter your name.'); return; }
+      setLoading('btn-signup', true, 'Create Account');
+      try {
+        await signUp(email, password, name);
+        showAlert('Account created! Check your email to confirm, then log in.', 'success');
+        setLoading('btn-signup', false, 'Create Account');
+      } catch (err) {
+        showAlert(err.message || 'Sign up failed. Try again.');
+        setLoading('btn-signup', false, 'Create Account');
+      }
+    });
+
+    // FORGOT PASSWORD
+    document.getElementById('forgot-link')?.addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim();
+      if (!email) { showAlert('Enter your email first, then click Forgot Password.'); return; }
+      try {
+        await resetPassword(email);
+        showAlert('Password reset email sent! Check your inbox.', 'success');
+      } catch (err) {
+        showAlert(err.message || 'Failed to send reset email.');
+      }
+    });
+  </script>
+</body>
+</html>
+
