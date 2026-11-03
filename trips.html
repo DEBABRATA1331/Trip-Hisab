@@ -7,7 +7,7 @@
   
   <meta name="title" content="My Trips | Upmark Curve (The Trip Hisab)">
   <meta name="description" content="Manage all your group trips, vacation budgets, and hisab trackers in one place on Upmark Curve (The Trip Hisab). Create new trips or join friends with an invite code.">
-  <meta name="keywords" content="upmarkcurve trips, group travel dashboard, the trip hisab my trips, vacation expenses">
+  <meta name="keywords" content="upmarkcurve trips, group travel dashboard, the trip hisab my trips, vacation expenses, travel budget calculator">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://upmarkcurve.com/trips.html">
 
@@ -15,151 +15,552 @@
   <link rel="stylesheet" href="./src/style.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { min-height: 100vh; background: #F0F4F8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .top-bar { background: #0F172A; color: #fff; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1E293B; }
-    .top-bar-brand { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 800; letter-spacing: -0.3px; text-decoration: none; color: #fff; }
-    .top-bar-brand img { width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,102,255,0.3); }
-    .top-bar-brand span { color: #38BDF8; font-weight: 600; font-size: 0.88rem; }
-    .user-info { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
-    .avatar { width: 32px; height: 32px; border-radius: 50%; background: #0066FF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
-    .btn-logout-top { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; }
-    .btn-logout-top:hover { background: rgba(255,255,255,0.2); }
-    .main { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
-    .section-title { font-size: 1.2rem; font-weight: 800; color: #0F172A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .trip-card { background: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; border: 1.5px solid #E2E8F0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .trip-card:hover { border-color: #0066FF; box-shadow: 0 4px 16px rgba(0,102,255,0.12); transform: translateY(-1px); }
-    .trip-card-left { display: flex; align-items: center; gap: 14px; }
-    .trip-icon { width: 46px; height: 46px; background: linear-gradient(135deg, #0066FF, #0284C7); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-    .trip-name { font-size: 1rem; font-weight: 700; color: #0F172A; }
-    .trip-meta { font-size: 0.78rem; color: #64748B; margin-top: 3px; }
-    .trip-role-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #EFF6FF; color: #0066FF; }
-    .trip-role-badge.admin { background: #0066FF; color: #fff; }
-    .arrow-icon { color: #CBD5E1; font-size: 1.2rem; }
-    .empty-state { text-align: center; padding: 48px 20px; color: #94A3B8; }
-    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty-state p { font-size: 0.9rem; }
-    .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-    .action-card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 18px; cursor: pointer; text-align: center; transition: all 0.2s; }
-    .action-card:hover { border-color: #0066FF; box-shadow: 0 4px 14px rgba(0,102,255,0.12); }
-    .action-card.primary { background: #0066FF; border-color: #0066FF; color: #fff; }
-    .action-card .ac-icon { font-size: 1.8rem; margin-bottom: 8px; }
-    .action-card .ac-title { font-size: 0.9rem; font-weight: 700; }
-    .action-card .ac-sub { font-size: 0.75rem; margin-top: 4px; opacity: 0.7; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-    .modal-overlay.open { display: flex; }
-    .modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 400px; }
-    .modal-box h2 { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin-bottom: 18px; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
-    input, select { width: 100%; padding: 10px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-size: 0.92rem; color: #0F172A; background: #F8FAFC; outline: none; }
-    input:focus, select:focus { border-color: #0066FF; background: #fff; }
-    .btn-row { display: flex; gap: 10px; margin-top: 18px; }
-    .btn { padding: 11px 18px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; border: none; flex: 1; transition: all 0.2s; }
-    .btn-blue { background: #0066FF; color: #fff; }
+    body {
+      min-height: 100vh;
+      background: #F8FAFC;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0F172A;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation */
+    .top-bar {
+      background: #0F172A;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1E293B;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .top-bar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .top-bar-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,102,255,0.3);
+    }
+    .top-bar-brand span {
+      color: #38BDF8;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0066FF, #00D2FF);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 6px rgba(0,102,255,0.25);
+    }
+    .btn-logout-top {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #E2E8F0;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-logout-top:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #FCA5A5;
+    }
+
+    /* Layout Container */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* Gen-Z Animated Action Cards */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .action-card {
+      background: #fff;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 20px 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .action-card:active {
+      transform: scale(0.97);
+    }
+    .action-card:hover {
+      border-color: #0066FF;
+      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    .action-card.primary {
+      background: linear-gradient(135deg, #0066FF 0%, #0284C7 100%);
+      border-color: #0066FF;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.22);
+    }
+    .action-card.primary:hover {
+      box-shadow: 0 12px 30px rgba(0, 102, 255, 0.35);
+    }
+    .action-card .ac-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      color: #0066FF;
+      transition: transform 0.2s ease;
+    }
+    .action-card.primary .ac-icon-box {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+    .action-card:hover .ac-icon-box {
+      transform: scale(1.1);
+    }
+    .action-card .ac-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    .action-card .ac-sub {
+      font-size: 0.74rem;
+      margin-top: 4px;
+      opacity: 0.75;
+    }
+
+    /* Trip List Cards */
+    .trip-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      border: 1.5px solid #E2E8F0;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      animation: slideUpFade 0.3s ease-out;
+    }
+    .trip-card:active {
+      transform: scale(0.98);
+    }
+    .trip-card:hover {
+      border-color: #0066FF;
+      box-shadow: 0 8px 24px rgba(0,102,255,0.1);
+      transform: translateY(-2px);
+    }
+    .trip-card-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .trip-icon-box {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, #0F172A, #1E3A5F);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38BDF8;
+      flex-shrink: 0;
+    }
+    .trip-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.3px;
+    }
+    .trip-meta {
+      font-size: 0.78rem;
+      color: #64748B;
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trip-code-pill {
+      background: #F1F5F9;
+      color: #0F172A;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .trip-role-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #EFF6FF;
+      color: #0066FF;
+      letter-spacing: 0.2px;
+    }
+    .trip-role-badge.admin {
+      background: #0066FF;
+      color: #fff;
+    }
+    .arrow-icon {
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #64748B;
+      background: #fff;
+      border-radius: 20px;
+      border: 1.5px dashed #CBD5E1;
+    }
+    .empty-state .empty-icon-svg {
+      width: 64px;
+      height: 64px;
+      color: #94A3B8;
+      margin: 0 auto 12px;
+      display: block;
+    }
+    .empty-state h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 4px;
+    }
+    .empty-state p {
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.open {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 22px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .modal-header-row h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-close-btn {
+      background: #F1F5F9;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #64748B;
+      transition: background 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: #E2E8F0;
+      color: #0F172A;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: #0F172A;
+      background: #F8FAFC;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #0066FF;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+    }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .btn {
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-blue {
+      background: #0066FF;
+      color: #fff;
+    }
     .btn-blue:hover { background: #0052CC; }
     .btn-blue:disabled { background: #93C5FD; cursor: not-allowed; }
-    .btn-ghost { background: #F1F5F9; color: #334155; }
+    .btn-ghost {
+      background: #F1F5F9;
+      color: #334155;
+    }
     .btn-ghost:hover { background: #E2E8F0; }
-    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.83rem; margin-bottom: 12px; }
-    .alert-error { background: #FEE2E2; color: #B91C1C; }
-    .alert-success { background: #D1FAE5; color: #065F46; }
-    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 5px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .invite-code-display { background: #EFF6FF; border: 2px dashed #93C5FD; border-radius: 10px; padding: 14px; text-align: center; margin: 12px 0; }
-    .invite-code-display code { font-size: 2rem; font-weight: 900; letter-spacing: 6px; color: #0066FF; }
-    .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 60vh; flex-direction: column; gap: 12px; color: #64748B; }
-    .loading-dot { width: 10px; height: 10px; border-radius: 50%; background: #0066FF; animation: pulse 1s ease-in-out infinite; display: inline-block; margin: 0 3px; }
+
+    .alert { padding: 11px 14px; border-radius: 10px; font-size: 0.84rem; margin-bottom: 14px; line-height: 1.4; }
+    .alert-error { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
+    .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+
+    .invite-code-display {
+      background: linear-gradient(135deg, #EFF6FF 0%, #E0F2FE 100%);
+      border: 2px dashed #93C5FD;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      margin: 16px 0;
+    }
+    .invite-code-display code {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: #0066FF;
+      font-family: monospace;
+    }
+
+    /* Loading screen */
+    .loading-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      flex-direction: column;
+      gap: 14px;
+      color: #64748B;
+    }
+    .loading-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0066FF;
+      animation: pulse 1s ease-in-out infinite;
+      display: inline-block;
+      margin: 0 4px;
+    }
     .loading-dot:nth-child(2) { animation-delay: 0.2s; }
     .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <a href="./trips.html" class="top-bar-brand">
-      <img src="./logo.svg" alt="Upmark Curve">
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <a href="./trips.html" class="top-bar-brand" title="Upmark Curve - My Trips">
+      <img src="./logo.svg" alt="Upmark Curve Logo">
       <div>Upmark Curve <span>· The Trip Hisab</span></div>
     </a>
     <div class="user-info">
-      <div class="avatar" id="user-avatar">?</div>
-      <span id="user-name-display">Loading...</span>
-      <button class="btn-logout-top" id="btn-logout">Log Out</button>
+      <div class="avatar" id="user-avatar">U</div>
+      <span id="user-name-display" style="font-weight: 600;">Loading...</span>
+      <button class="btn-logout-top" id="btn-logout" title="Log Out">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Logout</span>
+      </button>
     </div>
-  </div>
-    <div class="user-info">
-      <div class="avatar" id="user-avatar">?</div>
-      <span id="user-name-display">Loading...</span>
-      <button class="btn-logout-top" id="btn-logout">Log Out</button>
-    </div>
-  </div>
+  </header>
 
-  <div class="main">
+  <main class="main">
 
-    <!-- Loading -->
+    <!-- Loading Screen -->
     <div class="loading-screen" id="loading-screen">
       <div>
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
       </div>
-      <span>Loading your trips...</span>
+      <span style="font-size: 0.9rem; font-weight: 600;">Loading your trips...</span>
     </div>
 
-    <!-- Content (shown after load) -->
+    <!-- Main Content -->
     <div id="main-content" style="display:none;">
 
-      <!-- Quick Actions -->
-      <div class="section-title">
-        ✈️ Your Trips
-      </div>
+      <!-- Quick Action Cards -->
       <div class="action-cards">
         <div class="action-card primary" id="btn-new-trip">
-          <div class="ac-icon">➕</div>
+          <div class="ac-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
           <div class="ac-title">New Trip</div>
           <div class="ac-sub">Create & invite friends</div>
         </div>
+
         <div class="action-card" id="btn-join-trip">
-          <div class="ac-icon">🔗</div>
+          <div class="ac-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
           <div class="ac-title">Join a Trip</div>
-          <div class="ac-sub">Enter invite code</div>
+          <div class="ac-sub">Enter 6-character code</div>
         </div>
       </div>
 
-      <!-- Trips List -->
-      <div id="trips-list">
-        <div class="empty-state">
-          <div class="empty-icon">🗺️</div>
-          <p>No trips yet!<br>Create a new trip or join one with an invite code.</p>
+      <div class="section-header">
+        <div class="section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.5"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+          <span>Your Active Trips</span>
         </div>
       </div>
+
+      <!-- Trips List Container -->
+      <div id="trips-list">
+        <div class="empty-state">
+          <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2.1-6.4z"/></svg>
+          <h3>No trips yet</h3>
+          <p>Create a new trip or ask a friend for their invite code to join!</p>
+        </div>
+      </div>
+
     </div>
-  </div>
+  </main>
 
   <!-- MODAL: Create New Trip -->
   <div class="modal-overlay" id="modal-new-trip">
     <div class="modal-box">
-      <h2>✈️ Create New Trip</h2>
+      <div class="modal-header-row">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create New Trip
+        </h2>
+        <button class="modal-close-btn" id="btn-close-new-trip">&times;</button>
+      </div>
+
       <div id="new-trip-alert" class="alert" style="display:none;"></div>
+
       <form id="form-new-trip">
         <div class="form-group">
-          <label>Trip Name</label>
-          <input type="text" id="new-trip-name" placeholder="e.g. Goa 2026, Manali Trip..." required>
+          <label>Trip Title</label>
+          <input type="text" id="new-trip-name" placeholder="e.g. Goa Vacation, Manali Trip..." required autofocus>
         </div>
         <div class="form-group">
           <label>Currency</label>
           <select id="new-trip-currency">
             <option value="₹">₹ INR (Indian Rupee)</option>
-            <option value="$">$ USD</option>
-            <option value="€">€ EUR</option>
-            <option value="£">£ GBP</option>
-            <option value="AED">AED (Dirhams)</option>
+            <option value="$">$ USD (US Dollar)</option>
+            <option value="€">€ EUR (Euro)</option>
+            <option value="£">£ GBP (British Pound)</option>
+            <option value="AED">AED (UAE Dirham)</option>
             <option value="THB">THB (Thai Baht)</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Total Budget (optional)</label>
+          <label>Target Budget (Optional)</label>
           <input type="number" id="new-trip-budget" placeholder="e.g. 50000" min="0">
         </div>
         <div class="btn-row">
@@ -173,12 +574,20 @@
   <!-- MODAL: Join Trip -->
   <div class="modal-overlay" id="modal-join-trip">
     <div class="modal-box">
-      <h2>🔗 Join a Trip</h2>
+      <div class="modal-header-row">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Join a Trip
+        </h2>
+        <button class="modal-close-btn" id="btn-close-join-trip">&times;</button>
+      </div>
+
       <div id="join-trip-alert" class="alert" style="display:none;"></div>
+
       <form id="form-join-trip">
         <div class="form-group">
-          <label>Invite Code (6 characters)</label>
-          <input type="text" id="join-invite-code" placeholder="e.g. ABC123" maxlength="6" style="font-size:1.4rem; font-weight:800; letter-spacing:6px; text-transform:uppercase; text-align:center;" required>
+          <label>Enter 6-Character Invite Code</label>
+          <input type="text" id="join-invite-code" placeholder="ABC123" maxlength="8" style="font-size:1.5rem; font-weight:800; letter-spacing:6px; text-transform:uppercase; text-align:center;" required autofocus autocomplete="off">
         </div>
         <div class="btn-row">
           <button type="button" class="btn btn-ghost" id="btn-cancel-join-trip">Cancel</button>
@@ -188,20 +597,38 @@
     </div>
   </div>
 
-  <!-- MODAL: Trip Created - Share Invite Code -->
+  <!-- MODAL: Trip Created - Invite Friends -->
   <div class="modal-overlay" id="modal-invite-code">
     <div class="modal-box" style="text-align:center;">
-      <h2>🎉 Trip Created!</h2>
-      <p style="font-size:0.85rem; color:#64748B; margin-bottom:14px;">Share this invite code with your friends so they can join:</p>
+      <div style="width: 52px; height: 52px; border-radius: 16px; background: #D1FAE5; color: #059669; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Trip Created!</h2>
+      <p style="font-size:0.85rem; color:#64748B; margin-top: 4px;">Share this invite code with friends so they can join:</p>
+
       <div class="invite-code-display">
         <code id="display-invite-code">------</code>
       </div>
-      <p style="font-size:0.8rem; color:#94A3B8; margin: 10px 0 18px;">Friends go to <strong>upmarkcurve.com</strong>, sign up, then click "Join a Trip" and enter this code.</p>
+
+      <p style="font-size:0.8rem; color:#94A3B8; margin-bottom: 18px;">
+        Friends visit <strong>upmarkcurve.com</strong>, log in, click "Join a Trip" and enter this code.
+      </p>
+
       <div class="btn-row">
-        <button class="btn btn-ghost" id="btn-copy-invite">📋 Copy Code</button>
-        <button class="btn btn-blue" id="btn-share-whatsapp">💬 WhatsApp</button>
+        <button class="btn btn-ghost" id="btn-copy-invite">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span id="copy-btn-text">Copy Code</span>
+        </button>
+        <button class="btn btn-blue" id="btn-share-whatsapp">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span>Share WhatsApp</span>
+        </button>
       </div>
-      <button class="btn btn-ghost" id="btn-goto-trip" style="margin-top:10px; width:100%;">Open Trip →</button>
+
+      <button class="btn btn-ghost" id="btn-goto-trip" style="margin-top:10px; width:100%; border: 1.5px solid #E2E8F0;">
+        <span>Open Trip Dashboard</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
   </div>
 
@@ -212,33 +639,33 @@
     let currentTrips = [];
     let newlyCreatedTripId = null;
 
-    // Listen to session from email magic link
+    // Listen to session from email OTP or magic link
     onAuthChange(async (user) => {
       if (user && !currentUser) {
         currentUser = user;
-        const name = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
-        document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
-        document.getElementById('user-name-display').textContent = name;
+        updateUserUI();
         await loadTrips();
       }
     });
+
+    function updateUserUI() {
+      if (!currentUser) return;
+      const name = currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'Traveler';
+      document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('user-name-display').textContent = name;
+    }
 
     // Auth guard
     async function init() {
       currentUser = await getUser();
       if (!currentUser) {
-        // Give magic link hash a moment to parse if present
         if (window.location.hash && window.location.hash.includes('access_token')) {
-          return; // onAuthChange will handle it!
+          return; // Handled by onAuthChange
         }
         window.location.href = './login.html';
         return;
       }
-
-      const name = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
-      document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
-      document.getElementById('user-name-display').textContent = name;
-
+      updateUserUI();
       await loadTrips();
     }
 
@@ -247,7 +674,7 @@
         currentTrips = await getMyTrips();
         renderTrips(currentTrips);
       } catch (err) {
-        console.error(err);
+        console.error('Error in loadTrips:', err);
       } finally {
         document.getElementById('loading-screen').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
@@ -256,22 +683,37 @@
 
     function renderTrips(trips) {
       const container = document.getElementById('trips-list');
-      if (!trips.length) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">🗺️</div><p>No trips yet!<br>Create a new trip or join one with an invite code.</p></div>`;
+      if (!trips || !trips.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2.1-6.4z"/></svg>
+            <h3>No trips yet</h3>
+            <p>Create a new trip or ask a friend for their invite code to join!</p>
+          </div>
+        `;
         return;
       }
+
       container.innerHTML = trips.map(trip => `
         <div class="trip-card" data-id="${trip.id}">
           <div class="trip-card-left">
-            <div class="trip-icon">✈️</div>
+            <div class="trip-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+            </div>
             <div>
               <div class="trip-name">${escHtml(trip.name)}</div>
-              <div class="trip-meta">Code: <strong>${trip.invite_code}</strong> · ${trip.currency}</div>
+              <div class="trip-meta">
+                <span>Code:</span>
+                <span class="trip-code-pill">${escHtml(trip.invite_code || '')}</span>
+                <span>• ${escHtml(trip.currency || '₹')}</span>
+              </div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:10px;">
             <span class="trip-role-badge ${trip.myRole === 'admin' ? 'admin' : ''}">${trip.myRole === 'admin' ? 'Admin' : 'Member'}</span>
-            <span class="arrow-icon">›</span>
+            <span class="arrow-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
           </div>
         </div>
       `).join('');
@@ -285,7 +727,7 @@
     }
 
     function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     // LOGOUT
@@ -294,14 +736,17 @@
       window.location.href = './login.html';
     });
 
-    // OPEN/CLOSE MODALS
+    // OPEN / CLOSE MODALS
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
     document.getElementById('btn-new-trip').addEventListener('click', () => openModal('modal-new-trip'));
     document.getElementById('btn-cancel-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
+    document.getElementById('btn-close-new-trip').addEventListener('click', () => closeModal('modal-new-trip'));
+
     document.getElementById('btn-join-trip').addEventListener('click', () => openModal('modal-join-trip'));
     document.getElementById('btn-cancel-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
+    document.getElementById('btn-close-join-trip').addEventListener('click', () => closeModal('modal-join-trip'));
 
     // CREATE TRIP
     document.getElementById('form-new-trip').addEventListener('submit', async (e) => {
@@ -310,7 +755,7 @@
       alertEl.style.display = 'none';
       const btn = document.getElementById('btn-create-trip');
       btn.disabled = true;
-      btn.innerHTML = `<span class="spinner"></span>Creating...`;
+      btn.innerHTML = `<span class="spinner"></span> Creating...`;
       try {
         const trip = await createTrip({
           name: document.getElementById('new-trip-name').value.trim(),
@@ -340,26 +785,23 @@
       alertEl.style.display = 'none';
       const btn = document.getElementById('btn-join-trip-submit');
       btn.disabled = true;
-      btn.innerHTML = `<span class="spinner"></span>Joining...`;
+      btn.innerHTML = `<span class="spinner"></span> Joining...`;
       try {
-        const code = document.getElementById('join-invite-code').value.trim();
-        const name = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
+        const code = document.getElementById('join-invite-code').value.trim().toUpperCase();
+        const name = currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'Traveler';
         const { trip, alreadyMember } = await joinTripByCode(code, name);
         closeModal('modal-join-trip');
         if (alreadyMember) {
           window.location.href = `./index.html?trip=${trip.id}`;
         } else {
           await loadTrips();
-          alertEl.className = 'alert alert-success';
-          alertEl.textContent = `Joined "${trip.name}" successfully!`;
-          alertEl.style.display = 'block';
+          window.location.href = `./index.html?trip=${trip.id}`;
         }
         document.getElementById('form-join-trip').reset();
       } catch (err) {
         alertEl.className = 'alert alert-error';
-        alertEl.textContent = err.message || 'Failed to join trip.';
+        alertEl.textContent = err.message || 'Failed to join trip. Please check code.';
         alertEl.style.display = 'block';
-        openModal('modal-join-trip');
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Join Trip';
@@ -370,14 +812,15 @@
     document.getElementById('btn-copy-invite').addEventListener('click', () => {
       const code = document.getElementById('display-invite-code').textContent;
       navigator.clipboard.writeText(code).then(() => {
-        document.getElementById('btn-copy-invite').textContent = '✅ Copied!';
-        setTimeout(() => document.getElementById('btn-copy-invite').textContent = '📋 Copy Code', 2000);
+        const label = document.getElementById('copy-btn-text');
+        label.textContent = 'Copied!';
+        setTimeout(() => { label.textContent = 'Copy Code'; }, 2000);
       });
     });
 
     document.getElementById('btn-share-whatsapp').addEventListener('click', () => {
       const code = document.getElementById('display-invite-code').textContent;
-      const msg = `Join our trip on Trip Hisab!\n1. Go to https://upmarkcurve.com\n2. Sign up / Log in\n3. Click "Join a Trip" and enter code: *${code}*\n\nLet's track expenses together! ✈️`;
+      const msg = `Join our trip on Upmark Curve (The Trip Hisab)!\n1. Open https://upmarkcurve.com\n2. Log in with OTP or password\n3. Click "Join a Trip" and enter code: *${code}*\n\nLet's track expenses together!`;
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
     });
 
@@ -389,4 +832,3 @@
   </script>
 </body>
 </html>
-

@@ -125,15 +125,25 @@ export async function getMyTrips() {
     .select(`
       role,
       display_name,
+      joined_at,
       trips (
         id, name, currency, budget, invite_code, created_by, created_at
       )
     `)
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .order('joined_at', { ascending: false });
 
-  if (error) throw error;
-  return (data || []).map(row => ({ ...row.trips, myRole: row.role, myDisplayName: row.display_name }));
+  if (error) {
+    console.error('Error fetching trips:', error);
+    throw error;
+  }
+  return (data || [])
+    .filter(row => row.trips)
+    .map(row => ({
+      ...row.trips,
+      myRole: row.role,
+      myDisplayName: row.display_name
+    }));
 }
 
 /** Get a single trip by ID */

@@ -68,9 +68,18 @@
 
     <!-- Tabs: Quick OTP / Password / Sign Up -->
     <div class="tabs">
-      <button class="tab-btn active" data-tab="otp">⚡ Instant OTP</button>
-      <button class="tab-btn" data-tab="password">Password</button>
-      <button class="tab-btn" data-tab="signup">Sign Up</button>
+      <button class="tab-btn active" data-tab="otp" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>Instant OTP</span>
+      </button>
+      <button class="tab-btn" data-tab="password" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Password</span>
+      </button>
+      <button class="tab-btn" data-tab="signup" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <span>Sign Up</span>
+      </button>
     </div>
 
     <!-- 1. INSTANT OTP PANEL (Recommended & Passwordless) -->
