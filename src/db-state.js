@@ -70,10 +70,22 @@ class SupabaseStateManager {
         getNotes(this.tripId)
       ]);
 
-      // Find current user's member record
-      this.currentMember = members.find(m => m.user_id === this.currentUser.id) || null;
-
       // Map DB format → app format
+      const mappedMembers = this._mapMembers(members);
+      let foundMember = mappedMembers.find(m => m.userId === this.currentUser.id);
+      if (!foundMember) {
+        foundMember = {
+          id: this.currentUser.id,
+          userId: this.currentUser.id,
+          name: this.currentUser.user_metadata?.display_name || this.currentUser.email?.split('@')[0] || 'Admin',
+          avatar: (this.currentUser.user_metadata?.display_name || this.currentUser.email || 'A').charAt(0).toUpperCase(),
+          role: (trip.created_by === this.currentUser.id) ? 'admin' : 'member',
+          color: '#0066FF'
+        };
+        mappedMembers.unshift(foundMember);
+      }
+      this.currentMember = foundMember;
+
       this.state = {
         tripId: trip.id,
         tripName: trip.name,
@@ -81,10 +93,10 @@ class SupabaseStateManager {
         budget: trip.budget || 0,
         inviteCode: trip.invite_code,
         createdBy: trip.created_by,
-        members: this._mapMembers(members),
-        expenses: this._mapExpenses(expenses, members),
+        members: mappedMembers,
+        expenses: this._mapExpenses(expenses, mappedMembers),
         kitty: this._buildKittyState(kittyTx),
-        settlements: this._mapSettlements(settlements, members),
+        settlements: this._mapSettlements(settlements, mappedMembers),
         notes: this._mapNotes(notes),
         security: { enabled: false },
         settings: { syncStatus: 'synced', lastSyncedAt: new Date().toISOString() }

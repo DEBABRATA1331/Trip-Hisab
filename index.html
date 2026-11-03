@@ -52,52 +52,6 @@
 </head>
 <body>
 
-  <!-- 0. LOGIN CREDENTIAL GATE SCREEN -->
-  <div id="login-gate-screen" class="login-gate-overlay" style="display: none;">
-    <div class="login-gate-card">
-      <div class="login-gate-header">
-        <img src="./logo.svg" alt="Upmark Curve Logo" style="width: 58px; height: 58px; margin: 0 auto 12px; display: block; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,102,255,0.25);">
-        <h1 class="login-trip-title" id="login-screen-trip-name">Trip 2026</h1>
-        <p class="login-trip-subtitle">Upmark Curve · Group Expense & Split Monitor</p>
-      </div>
-
-      <form id="form-login-gate" class="login-gate-form">
-        <div class="form-group">
-          <label class="form-label" for="login-select-member">Your Name (Login ID)</label>
-          <select id="login-select-member" class="form-control" required style="font-weight: 600; font-size: 0.95rem; height: 44px;">
-            <!-- Rendered dynamically -->
-          </select>
-        </div>
-
-        <div class="form-group" id="group-new-member-name" style="display: none;">
-          <label class="form-label" for="input-new-member-name">Enter Your Full Name</label>
-          <input type="text" id="input-new-member-name" class="form-control" placeholder="e.g. Rohan Sharma" style="height: 44px;">
-        </div>
-
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label class="form-label" for="input-login-pin" style="margin-bottom: 0;">Password (Number)</label>
-            <span id="login-hint-badge" style="font-size: 0.72rem; color: var(--text-muted);">Set by Admin</span>
-          </div>
-          <div style="position: relative;">
-            <input type="password" inputmode="numeric" pattern="[0-9]*" id="input-login-pin" class="form-control" placeholder="Enter numeric passcode" required maxlength="12" style="font-size: 1.15rem; font-weight: 700; letter-spacing: 3px; height: 44px; padding-right: 60px;">
-            <button type="button" id="btn-toggle-pin-visibility" class="btn-pin-toggle" title="Show/Hide PIN" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 0.78rem; font-weight: 700;">SHOW</button>
-          </div>
-        </div>
-
-        <div id="login-error-alert" class="login-alert" style="display: none;"></div>
-
-        <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width: 100%; height: 46px; font-size: 1rem; font-weight: 700; margin-top: 8px;">
-          Log In & View Expenses
-        </button>
-
-        <div class="login-footer-hint">
-          <span>Shared link connects you to the live trip so all expenses can be monitored together by the group.</span>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Top App Header -->
   <header class="app-header">
     <div class="header-container">

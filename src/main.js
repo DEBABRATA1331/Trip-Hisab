@@ -2,36 +2,9 @@
 // TRIP HISAB - MAIN CONTROLLER & APPLICATION ENTRY POINT (NO EMOJIS, NO FAKE DATA)
 // =========================================================================
 
-// ─── SUPABASE AUTH GUARD ──────────────────────────────────────────────────────
-// If no trip ID in URL, redirect to trips list. If not logged in, redirect to login.
+// ─── SUPABASE IMPORTS ──────────────────────────────────────────────────────────
 import { getUser, signOut as supabaseSignOut } from './supabase.js';
 import { stateManager } from './db-state.js';
-
-(async function authGuard() {
-  const params = new URLSearchParams(window.location.search);
-  const tripId = params.get('trip');
-
-  const user = await getUser();
-  if (!user) {
-    window.location.href = './login.html';
-    return;
-  }
-
-  if (!tripId) {
-    window.location.href = './trips.html';
-    return;
-  }
-
-  // Initialize DB state manager with this trip
-  try {
-    await stateManager.init(tripId);
-  } catch (err) {
-    console.error('Failed to load trip:', err);
-    alert('Could not load trip. Redirecting to your trips list.');
-    window.location.href = './trips.html';
-    return;
-  }
-})();
 import {
   renderApp,
   showToast,
@@ -625,122 +598,7 @@ function setupEventListeners() {
     e.target.value = '';
   });
 
-  // 15. Login Gate Credential Events
-  const formLogin = document.getElementById('form-login-gate');
-  if (formLogin) {
-    formLogin.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const memberSelect = document.getElementById('login-select-member');
-      const selectedVal = memberSelect.value;
-      const pinInput = document.getElementById('input-login-pin');
-      const enteredPin = (pinInput.value || '').trim();
-      const errorAlert = document.getElementById('login-error-alert');
-      const security = stateManager.state.security || { groupPin: '1234', adminPin: '9999' };
-
-      errorAlert.style.display = 'none';
-
-      if (!selectedVal) {
-        errorAlert.textContent = 'Please select your name';
-        errorAlert.style.display = 'block';
-        return;
-      }
-
-      if (!enteredPin) {
-        errorAlert.textContent = 'Please enter numeric passcode';
-        errorAlert.style.display = 'block';
-        return;
-      }
-
-      let authenticatedUser = null;
-
-      if (selectedVal === 'ADMIN') {
-        if (enteredPin === security.adminPin || enteredPin === security.groupPin) {
-          authenticatedUser = {
-            id: 'ADMIN',
-            name: 'Admin',
-            avatar: 'A',
-            color: '#0F172A',
-            role: 'admin'
-          };
-        }
-      } else if (selectedVal === 'NEW_MEMBER') {
-        const newName = (document.getElementById('input-new-member-name').value || '').trim();
-        if (!newName) {
-          errorAlert.textContent = 'Please enter your full name';
-          errorAlert.style.display = 'block';
-          return;
-        }
-        if (enteredPin === security.groupPin || enteredPin === security.adminPin) {
-          stateManager.addMember(newName);
-          const created = stateManager.state.members.find(m => m.name.toLowerCase() === newName.toLowerCase());
-          authenticatedUser = {
-            id: created ? created.id : 'm_' + Date.now(),
-            name: newName,
-            avatar: newName.charAt(0).toUpperCase(),
-            color: created ? created.color : '#0066FF',
-            role: 'member'
-          };
-        }
-      } else {
-        const member = stateManager.state.members.find(m => m.id === selectedVal);
-        if (member) {
-          const expectedPin = security.memberPins?.[member.id] || security.groupPin || '1234';
-          if (enteredPin === expectedPin || enteredPin === security.adminPin) {
-            authenticatedUser = {
-              id: member.id,
-              name: member.name,
-              avatar: member.avatar,
-              color: member.color,
-              role: 'member'
-            };
-          }
-        }
-      }
-
-      if (authenticatedUser) {
-        setActiveUser(authenticatedUser);
-        document.getElementById('login-gate-screen').style.display = 'none';
-        pinInput.value = '';
-        showToast(`Welcome, ${authenticatedUser.name}!`);
-        renderApp();
-      } else {
-        errorAlert.textContent = 'Incorrect passcode. Please check with your trip admin.';
-        errorAlert.style.display = 'block';
-        pinInput.focus();
-      }
-    });
-  }
-
-  // Toggle PIN visibility
-  const btnTogglePin = document.getElementById('btn-toggle-pin-visibility');
-  if (btnTogglePin) {
-    btnTogglePin.addEventListener('click', () => {
-      const pinInput = document.getElementById('input-login-pin');
-      if (pinInput.type === 'password') {
-        pinInput.type = 'text';
-        btnTogglePin.textContent = 'HIDE';
-      } else {
-        pinInput.type = 'password';
-        btnTogglePin.textContent = 'SHOW';
-      }
-    });
-  }
-
-  // Toggle new member input on login screen
-  const selectLoginMember = document.getElementById('login-select-member');
-  if (selectLoginMember) {
-    selectLoginMember.addEventListener('change', (e) => {
-      const groupNewMember = document.getElementById('group-new-member-name');
-      if (e.target.value === 'NEW_MEMBER') {
-        groupNewMember.style.display = 'block';
-        document.getElementById('input-new-member-name').focus();
-      } else {
-        groupNewMember.style.display = 'none';
-      }
-    });
-  }
-
-  // Header Logout Button — now uses Supabase signOut
+  // 15. Header Logout Button — uses Supabase signOut
   const btnLogout = document.getElementById('btn-header-logout');
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
@@ -813,25 +671,35 @@ function setupEventListeners() {
   }
 }
 
-// --- Auth State Management ---
-const AUTH_STORAGE_KEY = 'TRIP_HISAB_ACTIVE_USER';
-
-function getActiveUser() {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
+// --- Auth State Management (Connected to Supabase User) ---
+export function getActiveUser() {
+  if (stateManager.currentMember) {
+    return {
+      id: stateManager.currentMember.id,
+      name: stateManager.currentMember.name || 'Traveler',
+      avatar: stateManager.currentMember.avatar || 'T',
+      role: stateManager.currentMember.role || 'member',
+      color: stateManager.currentMember.color || '#0066FF'
+    };
   }
+  if (stateManager.currentUser) {
+    const name = stateManager.currentUser.user_metadata?.display_name || stateManager.currentUser.email?.split('@')[0] || 'Traveler';
+    return {
+      id: stateManager.currentUser.id,
+      name: name,
+      avatar: name.charAt(0).toUpperCase(),
+      role: 'admin',
+      color: '#0066FF'
+    };
+  }
+  return null;
 }
 
 function setActiveUser(user) {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
   updateHeaderUserBadge(user);
 }
 
 function clearActiveUser() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
   updateHeaderUserBadge(null);
 }
 
@@ -851,38 +719,18 @@ function updateHeaderUserBadge(user) {
   }
 }
 
-function populateLoginMemberChoices() {
-  const select = document.getElementById('login-select-member');
-  if (!select) return;
-  const members = stateManager.state.members || [];
-  let html = `<option value="" disabled selected>-- Select Your Name --</option>`;
-  members.forEach(m => {
-    html += `<option value="${m.id}">${m.name}</option>`;
-  });
-  html += `<option value="ADMIN">Admin (Trip Organizer)</option>`;
-  html += `<option value="NEW_MEMBER">+ Join as New Friend</option>`;
-  select.innerHTML = html;
-
-  // Update trip title on login screen
-  const tripTitleEl = document.getElementById('login-screen-trip-name');
-  if (tripTitleEl) tripTitleEl.textContent = stateManager.state.tripName || 'Trip 2026';
-}
-
 function checkAuthAndGate() {
   const gate = document.getElementById('login-gate-screen');
-  if (!gate) return true;
-  const activeUser = getActiveUser();
-
-  if (!activeUser) {
-    populateLoginMemberChoices();
-    gate.style.display = 'flex';
-    updateHeaderUserBadge(null);
-    return false;
-  } else {
+  // With Supabase auth, users are already authenticated!
+  // Always hide legacy gate screen and show the user badge.
+  if (gate) {
     gate.style.display = 'none';
-    updateHeaderUserBadge(activeUser);
-    return true;
   }
+  const activeUser = getActiveUser();
+  if (activeUser) {
+    updateHeaderUserBadge(activeUser);
+  }
+  return true;
 }
 
 // --- Share Trip Modal ---
@@ -1091,8 +939,30 @@ function openNoteModal(noteToEdit = null) {
 
 // App Initialization
 async function init() {
-  cleanLegacyFakeData();
+  const params = new URLSearchParams(window.location.search);
+  const tripId = params.get('trip');
+
+  const user = await getUser();
+  if (!user) {
+    window.location.href = './login.html';
+    return;
+  }
+
+  if (!tripId) {
+    window.location.href = './trips.html';
+    return;
+  }
+
   setupEventListeners();
+
+  try {
+    await stateManager.init(tripId);
+  } catch (err) {
+    console.error('Failed to load trip:', err);
+    alert('Could not load trip. Redirecting to your trips list.');
+    window.location.href = './trips.html';
+    return;
+  }
 
   // Connect Google Sheet debounced auto-sync
   stateManager.onAutoSync = (s) => pushToGoogleSheet(s, false);
@@ -1103,13 +973,14 @@ async function init() {
   // Re-render whenever state changes
   stateManager.subscribe(() => {
     renderApp();
-    const user = getActiveUser();
-    if (user) updateHeaderUserBadge(user);
+    const active = getActiveUser();
+    if (active) updateHeaderUserBadge(active);
   });
 
   // Initial render
   renderApp();
-  checkAuthAndGate();
+  const active = getActiveUser();
+  if (active) updateHeaderUserBadge(active);
 
   // Start live background monitoring across group
   startLiveMonitoring();
