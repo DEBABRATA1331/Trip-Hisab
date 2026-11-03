@@ -9,7 +9,7 @@
   <meta name="description" content="Manage all your group trips, vacation budgets, and hisab trackers in one place on Upmark Curve (The Trip Hisab). Create new trips or join friends with an invite code.">
   <meta name="keywords" content="upmarkcurve trips, group travel dashboard, the trip hisab my trips, vacation expenses">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://upmarkcurve.in/trips.html">
+  <link rel="canonical" href="https://upmarkcurve.com/trips.html">
 
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <link rel="stylesheet" href="./src/style.css">
@@ -196,7 +196,7 @@
       <div class="invite-code-display">
         <code id="display-invite-code">------</code>
       </div>
-      <p style="font-size:0.8rem; color:#94A3B8; margin: 10px 0 18px;">Friends go to <strong>upmarkcurve.in</strong>, sign up, then click "Join a Trip" and enter this code.</p>
+      <p style="font-size:0.8rem; color:#94A3B8; margin: 10px 0 18px;">Friends go to <strong>upmarkcurve.com</strong>, sign up, then click "Join a Trip" and enter this code.</p>
       <div class="btn-row">
         <button class="btn btn-ghost" id="btn-copy-invite">📋 Copy Code</button>
         <button class="btn btn-blue" id="btn-share-whatsapp">💬 WhatsApp</button>
@@ -362,7 +362,7 @@
 
     document.getElementById('btn-share-whatsapp').addEventListener('click', () => {
       const code = document.getElementById('display-invite-code').textContent;
-      const msg = `Join our trip on Trip Hisab!\n1. Go to https://upmarkcurve.in\n2. Sign up / Log in\n3. Click "Join a Trip" and enter code: *${code}*\n\nLet's track expenses together! ✈️`;
+      const msg = `Join our trip on Trip Hisab!\n1. Go to https://upmarkcurve.com\n2. Sign up / Log in\n3. Click "Join a Trip" and enter code: *${code}*\n\nLet's track expenses together! ✈️`;
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
     });
 
