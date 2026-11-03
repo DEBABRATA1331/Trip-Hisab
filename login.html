@@ -80,19 +80,19 @@
         <div class="form-group">
           <label for="otp-email">Enter Your Email Address</label>
           <input type="email" id="otp-email" placeholder="you@example.com" required autocomplete="email">
-          <span style="font-size: 0.76rem; color: #64748B; margin-top: 5px; display: block;">We will send a 6-digit login code to your inbox. No password needed!</span>
+          <span style="font-size: 0.76rem; color: #64748B; margin-top: 5px; display: block;">We will send a login code to your inbox. No password needed!</span>
         </div>
-        <button type="submit" class="btn-primary" id="btn-send-otp">Send 6-Digit Code</button>
+        <button type="submit" class="btn-primary" id="btn-send-otp">Send Login Code</button>
       </form>
 
-      <!-- Step B: Enter 6-digit code (initially hidden) -->
+      <!-- Step B: Enter code (initially hidden) -->
       <form id="form-verify-otp" style="display: none; margin-top: 14px;">
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label for="otp-code" style="margin-bottom: 0;">Enter 6-Digit Code</label>
+            <label for="otp-code" style="margin-bottom: 0;">Enter Login Code</label>
             <span id="btn-change-email" style="font-size: 0.75rem; color: #0066FF; cursor: pointer; font-weight: 600;">Change email</span>
           </div>
-          <input type="text" id="otp-code" class="otp-input" placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]*" required autocomplete="one-time-code">
+          <input type="text" id="otp-code" class="otp-input" placeholder="Enter code" maxlength="10" inputmode="numeric" pattern="[0-9]*" required autocomplete="one-time-code" style="letter-spacing: 5px;">
         </div>
         <button type="submit" class="btn-primary" id="btn-verify-otp">Verify Code & Enter</button>
         <button type="button" class="btn-secondary" id="btn-resend-otp" style="margin-top: 8px;">Resend Code</button>
@@ -193,17 +193,17 @@
       hideAlert();
       const email = document.getElementById('otp-email').value.trim();
       currentOtpEmail = email;
-      setLoading('btn-send-otp', true, 'Send 6-Digit Code');
+      setLoading('btn-send-otp', true, 'Send Login Code');
       try {
         await sendOtp(email);
-        showAlert(`A 6-digit login code was sent to ${email}. Please check your inbox (or spam)!`, 'info');
+        showAlert(`A login code was sent to ${email}. Please check your inbox (or spam)!`, 'info');
         document.getElementById('form-send-otp').style.display = 'none';
         document.getElementById('form-verify-otp').style.display = 'block';
         document.getElementById('otp-code').focus();
       } catch (err) {
         showAlert(err.message || 'Failed to send login code. Please check your Brevo SMTP settings.');
       } finally {
-        setLoading('btn-send-otp', false, 'Send 6-Digit Code');
+        setLoading('btn-send-otp', false, 'Send Login Code');
       }
     });
 
@@ -212,8 +212,8 @@
       e.preventDefault();
       hideAlert();
       const code = document.getElementById('otp-code').value.trim();
-      if (!code || code.length < 6) {
-        showAlert('Please enter the full 6-digit code.');
+      if (!code || code.length < 4) {
+        showAlert('Please enter the code sent to your email.');
         return;
       }
       setLoading('btn-verify-otp', true, 'Verify Code & Enter');
