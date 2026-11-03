@@ -206,16 +206,31 @@
   </div>
 
   <script type="module">
-    import { getUser, getMyTrips, createTrip, joinTripByCode, signOut } from './src/supabase.js';
+    import { getUser, getMyTrips, createTrip, joinTripByCode, signOut, onAuthChange } from './src/supabase.js';
 
     let currentUser = null;
     let currentTrips = [];
     let newlyCreatedTripId = null;
 
+    // Listen to session from email magic link
+    onAuthChange(async (user) => {
+      if (user && !currentUser) {
+        currentUser = user;
+        const name = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
+        document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('user-name-display').textContent = name;
+        await loadTrips();
+      }
+    });
+
     // Auth guard
     async function init() {
       currentUser = await getUser();
       if (!currentUser) {
+        // Give magic link hash a moment to parse if present
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          return; // onAuthChange will handle it!
+        }
         window.location.href = './login.html';
         return;
       }

@@ -140,7 +140,14 @@
   </div>
 
   <script type="module">
-    import { signIn, signUp, sendOtp, verifyOtp, getUser, resetPassword } from './src/supabase.js';
+    import { signIn, signUp, sendOtp, verifyOtp, getUser, resetPassword, onAuthChange } from './src/supabase.js';
+
+    // Auto-login if user clicked the magic link in email (Supabase puts session in URL)
+    onAuthChange((user) => {
+      if (user) {
+        window.location.href = './trips.html';
+      }
+    });
 
     // If already logged in, redirect to trips page
     const user = await getUser();
